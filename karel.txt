@@ -1,0 +1,14 @@
+class program {
+  program () {
+    end()
+  }
+}
+
+class program {
+  program () {
+    move()
+    move()
+    end()
+  }
+}
+

@@ -1,0 +1,51 @@
+<program> ::= "class" "program" "{" <functions> <main function> "}"
+
+<functions> ::= <function> <functions prima> | lambda
+
+<functions prima> ::= <function> <functions prima> | lambda
+
+<main function> ::= "program()" "{" <body> "}"
+
+<function> ::= "void" <name function> "("  ")" "{" <body> "}"
+
+<body> ::= <expression> <body prima>
+
+<body prima> ::= <expression> <body prima> | lambda
+
+<expression> ::= <call function> | <switch expression> | <if expression> | <while expression> | <iterate expression>
+
+<call function> ::= <name function> "()"
+
+<name function> ::= <official function> | <customer function>
+
+<if expression> ::= "if" "(" <condition> ")" "{" <body>  "}" <else>
+
+<else> ::= "else" "{" <body> "}"  | lambda
+
+<while> ::= "while" "(" <condition> ")" "{" <body> "}"
+
+<iterate expression> ::= "iterate" "(" <number> ")" "{" <body> "}"
+
+
+// evalua el valor de una variable
+<switch expression> ::= "switch" “(“ <Case conditionals> “)” "{" <cases> "}"
+
+<case> ::= "case" "(" <number> ")" “:” "{" <body> "}"
+
+
+
+
+<number> ::= numero natural del 1 al 100
+
+<condition> ::= <side>"-is-clear" | <side>"-is-blocked" | "next-to-a-beeper" | "not-next-to-a-beeper" |
+"facing-"<direction> | "not-facing-"<direction> | "any-beepers-in-beeper-bag" | "no-beepers-in-beeper-bag"
+
+<side> ::= "front" | "left" | "right"
+
+<direction> ::= "north" | "south" | "east" | "west"
+
+<official function> ::= "move" | "turnLeft" | "pickBeeper" | "putBeeper" | "end"
+
+<customer function> ::= palabra de mas de 2 caracteres y menos de 11
+
+

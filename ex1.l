@@ -1,0 +1,4 @@
+%%
+"hello"    printf("hellooooo \n");
+.                ;
+%%
