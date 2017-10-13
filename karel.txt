@@ -1,14 +1,9 @@
 class program {
-  program () {
-    end()
-  }
-}
+    program () {
+        move()
+        move()
+        end()
 
-class program {
-  program () {
-    move()
-    move()
-    end()
-  }
+    }
 }
 
