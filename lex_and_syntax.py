@@ -4,33 +4,41 @@ class OurLexer(object):
     # List of token names.   This is always required
     global reserved
     reserved = {
-        'class': 'CLASS',
-        'program':'PROGRAM',
-        'void':'VOID',
-        'iterate':'ITERATE',
-        'isclear':'ISCLEAR',
-        'isblocked':'ISBLOCKED',
-        'nexttobeeper':'NEXTTOBEEPER',
-        'notnexttobeeper':'NOTNEXTTOBEEPER',
-        'facing':'FACING',
-        'notfacing':'NOTFACING',
-        'anybeepers':'ANYBEEPERS',
-        'nobeepers':'NOBEEPERS',
-        'front':'FRONT',
-        'left':'LEFT',
-        'right':'RIGHT',
-        'north':'NORTH',
-        'south':'SOUTH',
-        'east':'EAST',
-        'west':'WEST',
-        'move':'MOVE',
-        'turnleft':'TURNLEFT',
-        'pickbeeper':'PICKBEEPER',
-        'putbeeper':'PUTBEEPER',
-        'end':'END',
-        'if': 'IF',
-        'else':'ELSE',
-        'while': 'WHILE',
+      'void': 'VOID',
+      'class': 'CLASS',
+      'program': 'PROGRAM',
+      'end': 'END',
+      'if': 'IF',
+      'else': 'ELSE',
+      'while': 'WHILE',
+      'iterate': 'ITERATE',
+      'return': 'RETURN',
+      '||': 'OR',
+      '&&': 'AND',
+      '!': 'NOT',
+      'turnoff': 'TURNOFF',
+      'turnleft': 'TURNLEFT',
+      'move': 'MOVE',
+      'pickbeeper': 'PICKBEEPER',
+      'putbeeper': 'PUTBEEPER',
+      'front-is-clear': 'FRONTISCLEAR',
+      'left-is-clear': 'LEFTISCLEAR',
+      'right-is-clear': 'RIGHTISCLEAR',
+      'front-is-blocked': 'FRONTISBLOCKED',
+      'left-is-blocked': 'LEFTISBLOCKED',
+      'right-is-blocked': 'RGHTISBLOCKED',
+      'next-to-a-beeper': 'NEXTTOABEEPER',
+      'not-next-to-a-beeper': 'NOTNEXTTOABEEPER',
+      'facing-north': 'FACINGNORTH',
+      'facing-south': 'FACINGSOUTH',
+      'facing-east': 'FACINGEAST',
+      'facing-west': 'FACINGWEST',
+      'not-facing-north': 'NOTFACINGNORTH',
+      'not-facing-south': 'NOTFACINGSOUTH',
+      'not-facing-east': 'NOTFACINGEAST',
+      'not-facing-west': 'NOTFACINGWEST',
+      'any-beepers-in-beeper-bag': 'ANYBEEPERSINBEEPERBAG',
+      'no-beepers-in-beeper-bag': 'NOBEEPERSBAG'
     }
 
     tokens = [
@@ -38,7 +46,8 @@ class OurLexer(object):
         'RBRACKET',
         'LPAREN',
         'RPAREN',
-        'IDENTIFIER'
+        'IDENTIFIER',
+        'NUMBER'
         ] + list(reserved.values())
 
     # Regular expression rules for simple tokens
@@ -53,9 +62,10 @@ class OurLexer(object):
       t.lexer.lineno += len(t.value)
 
     def t_ID(self, token):
-      r'[a-zA-Z_][a-zA-Z_0-9]*'
+      r'[a-zA-Z_][-a-zA-Z_0-9]*'
       global reserved
       token.type = reserved.get(token.value,'IDENTIFIER')    # Check for reserved words
+
       return token
 
     def t_NUMBER(self, t):
@@ -94,6 +104,16 @@ class OurLexer(object):
         token_values.append(token.value)
       return token_values
 
+    def get_tokens_types(self,data):
+      self.lexer.input(data)
+      token_types = []
+      while True:
+        token = self.lexer.token()
+        if not token:
+          break
+        token_types.append(token.type)
+      return token_types
+
 # karel_program = open('karel.txt').read()
 # lexer = OurLexer()
 # lexer.build()
@@ -122,8 +142,30 @@ def verificar(expected_token):
 global counter
 counter = 0
 
+def verificar_identifier():
+  global all_tokens
+  next_token = all_tokens[-1]
+  print ('VERIFICANDO IDENTIFIER::::::', next_token)
+  return len(next_token) > 2 and len(next_token) < 11
+
+def exigir_identifier():
+  global all_tokens
+  next_token = all_tokens[-1]
+  if (verificar_identifier()):
+    next_token = all_tokens.pop()
+    print('popeeeoooooo el identifier: {}'.format(next_token))
+    # global counter
+    # counter = counter + 1
+    # print (counter, all_tokens)
+    # print ('')
+  else:
+    raise Exception('function has to have length between 2 and 11')
+
+
+
 def exigir(expected_token):
     global all_tokens
+    print (all_tokens, 'antes del pop')
     next_token = all_tokens.pop()
 
     global counter
@@ -133,7 +175,7 @@ def exigir(expected_token):
     return expected_token == next_token
 
 def mostrarError():
-    raise Exception('Unexpected token ;)  -- mamamlon')
+    raise Exception('Unexpected token!!!')
 
 
 
@@ -196,6 +238,7 @@ def main_function():
 #------TERMINADO------
 #<function> ::= "void" <name function> "("  ")" "{" <body> "}"
 def function():
+  print ('CORRIENDO FUNCIOOOOOOOOOOOOOOOOOOOOOOOOON')
   if (exigir("void")):
     name_function()
     if (exigir("(")):
@@ -227,7 +270,8 @@ def body():
 #<body prima> ::= <expression> <body prima> | lambda
 def body_prima():
   print ('entra a body prima ')
-  if ( verificar("if") or verificar( "while" ) or verificar( "iterate" ) or verificar('move') or verificar("turnLeft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end")):
+
+  if ( verificar("if") or verificar( "while" ) or verificar( "iterate" ) or verificar('move') or verificar("turnLeft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end") or verificar_identifier()):
     expression()
     body_prima()
   #else lambda
@@ -253,6 +297,7 @@ def expression():
 def call_function():
   name_function()
   print ('exigiendo parentesis en call function')
+
   if (exigir("(")):
     if (not exigir(")")):
       mostrarError()
@@ -265,12 +310,13 @@ def call_function():
 #<name function> ::= <official function> | <customer function>
 def name_function():
   if (verificar('move') or verificar("turnLeft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end")):
+    print ('obviamente entre a official fucntion')
     official_function()
   else:
     customer_function()
 
 def customer_function():
-  print ('no tenemos CUSTOMER FUNCTION lol')
+  exigir_identifier()
 
 #------TERMINADO------
 #<if expression> ::= "if" "(" <condition> ")" "{" <body>  "}" <else>
@@ -463,10 +509,16 @@ lexer.build()
 
 
 all_tokens = lexer.get_tokens(karel_program)
+#token_types = lexer.get_tokens_types(karel_program)
+
+#token_types.reverse()
 all_tokens.reverse()
 #print (all_tokens)
 
-all_tokens2 = all_tokens
+
+#Pa debuggear
+#print (all_tokens)
+#print (token_types)
 
 
 
