@@ -12,6 +12,9 @@ class program {
         if(front-is-blocked){
             move()
         }
+        iterate(3){
+            move()
+        }
         end()
     }
 }

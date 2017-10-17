@@ -161,18 +161,30 @@ def exigir_identifier():
   else:
     raise Exception('function has to have length between 2 and 11')
 
+def exigir_numero():
+  global all_tokens
+  next_token = all_tokens[-1]
+  if (verificar_numero()):
+    next_token = all_tokens.pop()
+    print('popeeeoooooo el NUMERO: {}'.format(next_token))
+
+def verificar_numero():
+  global all_tokens
+  next_token = all_tokens[-1]
+  print ('VERIFICANDO NUMEROOOOO::::::', next_token)
+  return int(next_token) >= 1 and int(next_token) <= 100
 
 
 def exigir(expected_token):
-    global all_tokens
-    print (all_tokens, 'antes del pop')
-    next_token = all_tokens.pop()
+  global all_tokens
+  print (all_tokens, 'antes del pop')
 
-    global counter
-    counter = counter + 1
-    print (counter, all_tokens)
-    print ('')
-    return expected_token == next_token
+  next_token = all_tokens.pop()
+  global counter
+  counter = counter + 1
+  print (counter, all_tokens)
+  print ('')
+  return expected_token == next_token
 
 def mostrarError():
     raise Exception('Unexpected token!!!')
@@ -316,6 +328,9 @@ def name_function():
     customer_function()
 
 def customer_function():
+  global all_tokens
+  next_token = all_tokens[-1]
+  print('CUSTOMER FUNCTION TOKEN {}'.format(next_token))
   exigir_identifier()
 
 #------TERMINADO------
@@ -497,6 +512,11 @@ def official_function():
   else:
     mostrarError()
 
+#------SIN TERMINAR------
+#<number> ::= numero natural del 1 al 100
+def number():
+  exigir_numero()
+
 
 
 karel_program = open('karel.txt').read()
@@ -530,12 +550,10 @@ program()
 
 #------SIN TERMINAR------
 #aquí vamos a comparar con todas las palabras reservadas (no todos los tokens, solo las palabras reservadas).
-#<customer function> ::= palabra de mas de 2 caracteres y menos de 11
+#<customer function> ::= palabra de mas de 2 caracteres y menos de `11
 #def customer_function(){
 
 #}
 
-#------SIN TERMINAR------
-#<number> ::= numero natural del 1 al 100
 
 
