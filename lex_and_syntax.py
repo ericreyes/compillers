@@ -116,44 +116,55 @@ class OurLexer(object):
         return token_types
 
 # Declaracion e inicializacion de CODIGO INTERMEDIO
-    global codInter
-    codInter = []
+    global ci_list
+    ci_list = []
     for i in range(10000):
-        codInter.append(0)
+        ci_list.append(0)
 
     # Counter para CODIGO INTERMEDIO
-    global codInterCnt
-    codInterCnt = 0
+    global ci_count
+    global symbol_count
+
+
+    ci_count = 0
 
     # Constantes (numeros) para funciones [deben ir en TABLA DE SIMBOLOS, no?]
 
-    global tableSim
-    tableSim = {
-        'move': 9001,
-        'turnLeft': 9002,
-        'putBeeper': 9003,
-        'pickBeeper': 9004,
-        'end': 9005
-        }
+    global symbol_table
+    symbol_table = {
+      # if iterate
+      'if': 10,
+      'iterate': 20,
 
-class Stack:
-    def __init__(self):
-        self.items = []
+      #official functions
+      'move': 9001,
+      'turnLeft': 9002,
+      'putBeeper': 9003,
+      'pickBeeper': 9004,
+      'end': 9005,
+      #conditionals
+      'front-is-clear': 8001,
+      'left-is-clear': 8002,
+      'right-is-clear': 8003,
+      'front-is-blocked': 8004,
+      'left-is-blocked': 8005,
+      'right-is-blocked': 8006,
+      'next-to-a-beeper': 8007,
+      'not-next-to-a-beeper': 8008,
+      'facing-north': 8009,
+      'facing-south': 8010,
+      'facing-east': 8011,
+      'facing-west': 8012,
+      'not-facing-north': 8013,
+      'not-facing-south': 8014,
+      'not-facing-east': 8015,
+      'not-facing-west': 8016,
+      'any-beepers-in-beeper-bag': 8017,
+      'no-beepers-in-beeper-bag': 8018,
 
-    def isEmpty(self):
-        return self.items == []
+    }
+    symbol_count = len(symbol_table) + 8999
 
-    def push(self, item):
-        self.items.append(item)
-
-    def pop(self):
-        return self.items.pop()
-
-    def peek(self):
-        return self.items[len(self.items) - 1]
-
-    def size(self):
-        return len(self.items)
 
 # karel_program = open('karel.txt').read()
 # lexer = OurLexer()
@@ -228,6 +239,31 @@ def exigir(expected_token):
     print ('')
     return expected_token == next_token
 
+def add_code_in_ci(word_to_find):
+    global ci_count
+    print('Setting {} in Codigo Intermedio'.format(word_to_find))
+    if(word_to_find in symbol_table):
+        ci_list[ci_count] = symbol_table[word_to_find]
+        print('{} is the code to insert in ci_list[{}]'.format(ci_list[ci_count], ci_count))
+        print('#################')
+        print('adding' , word_to_find)
+        for x in range(0, 10):
+          print(ci_list[x])
+        print('#################')
+
+    ci_count = ci_count + 1
+
+def add_symbol_to_table(symbol):
+  global symbol_table
+  global symbol_count
+  symbol_count += 1
+  symbol_table.update({symbol: symbol_count})
+  print(symbol_table, 'AGREGUE UNA FUNCION, BIEN VERGA')
+
+
+
+#------------------------------------------------------------------------------------------------
+
 
 def mostrarError():
     raise Exception('Unexpected token!!!')
@@ -291,6 +327,7 @@ def main_function():
 def function():
     print ('CORRIENDO FUNCIOOOOOOOOOOOOOOOOOOOOOOOOON')
     if (exigir("void")):
+
         name_function() #HERE
         if (exigir("(")):
             if (exigir(")")):
@@ -355,14 +392,6 @@ def call_function():
         mostrarError()
     print ('CALL FUNCTION, SE CHINGO PARENTESIS')
 
-def setCodeInsideCodigoIntermedio(word_to_find):
-    print('Setting {} in Codigo Intermedio'.format(word_to_find))
-    if(word_to_find in tableSim):
-        codInter[codInterCnt] = tableSim[word_to_find]
-        print('{} is the code to insert in codInter[{}]'.format(codInter[codInterCnt], codInterCnt))
-        for x in range(0, 10):
-            print(codInter[x])
-        
 
 #------PENDIENTE_CI------
 #<name function> ::= <official function> | <customer function>
@@ -370,8 +399,8 @@ def name_function():
     if (verificar('move') or verificar("turnLeft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end")):
         print ('obviamente entre a official fucntion')
         next_token = all_tokens[-1]
-        setCodeInsideCodigoIntermedio(next_token)
-        codInterCnt = codInterCnt + 1
+        add_code_in_ci(next_token)
+
         official_function()
     else:
         customer_function()
@@ -380,6 +409,8 @@ def name_function():
 def customer_function():
     global all_tokens
     next_token = all_tokens[-1]
+    add_symbol_to_table(next_token)
+    add_code_in_ci(next_token)
     print('CUSTOMER FUNCTION TOKEN {}'.format(next_token))
     exigir_identifier()
 
@@ -394,6 +425,7 @@ def if_expression():
             if (exigir(")")):
                 if (exigir("{")):
                     body()
+
                     if (exigir("}")):
                         else_expression()
                     else:
@@ -575,7 +607,6 @@ karel_program = open('karel.txt').read()
 lexer = OurLexer()
 lexer.build()
 
-stackEstructuras = Stack()
 
 # lexer.test(karel_program)
 

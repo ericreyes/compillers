@@ -1,21 +1,12 @@
 class program {
 
-    void myFunction() {
-        turnLeft()
-        turnLeft()
-        turnLeft()
-    }
-
     program() {
-        move()
-        myFunction()
-        if(front-is-blocked){
+        if(front-is-clear){
             move()
         }
-        iterate(3){
-            move()
+        else{
+            turnLeft()
         }
-        end()
     }
 }
 
