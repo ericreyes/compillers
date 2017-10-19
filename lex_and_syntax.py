@@ -1,44 +1,45 @@
 import ply.lex as lex
 
+
 class OurLexer(object):
-    # List of token names.   This is always required
+    # List of token names.     This is always required
     global reserved
     reserved = {
-      'void': 'VOID',
-      'class': 'CLASS',
-      'program': 'PROGRAM',
-      'end': 'END',
-      'if': 'IF',
-      'else': 'ELSE',
-      'while': 'WHILE',
-      'iterate': 'ITERATE',
-      'return': 'RETURN',
-      '||': 'OR',
-      '&&': 'AND',
-      '!': 'NOT',
-      'turnoff': 'TURNOFF',
-      'turnleft': 'TURNLEFT',
-      'move': 'MOVE',
-      'pickbeeper': 'PICKBEEPER',
-      'putbeeper': 'PUTBEEPER',
-      'front-is-clear': 'FRONTISCLEAR',
-      'left-is-clear': 'LEFTISCLEAR',
-      'right-is-clear': 'RIGHTISCLEAR',
-      'front-is-blocked': 'FRONTISBLOCKED',
-      'left-is-blocked': 'LEFTISBLOCKED',
-      'right-is-blocked': 'RGHTISBLOCKED',
-      'next-to-a-beeper': 'NEXTTOABEEPER',
-      'not-next-to-a-beeper': 'NOTNEXTTOABEEPER',
-      'facing-north': 'FACINGNORTH',
-      'facing-south': 'FACINGSOUTH',
-      'facing-east': 'FACINGEAST',
-      'facing-west': 'FACINGWEST',
-      'not-facing-north': 'NOTFACINGNORTH',
-      'not-facing-south': 'NOTFACINGSOUTH',
-      'not-facing-east': 'NOTFACINGEAST',
-      'not-facing-west': 'NOTFACINGWEST',
-      'any-beepers-in-beeper-bag': 'ANYBEEPERSINBEEPERBAG',
-      'no-beepers-in-beeper-bag': 'NOBEEPERSBAG'
+        'void': 'VOID',
+        'class': 'CLASS',
+        'program': 'PROGRAM',
+        'end': 'END',
+        'if': 'IF',
+        'else': 'ELSE',
+        'while': 'WHILE',
+        'iterate': 'ITERATE',
+        'return': 'RETURN',
+        '||': 'OR',
+        '&&': 'AND',
+        '!': 'NOT',
+        'turnoff': 'TURNOFF',
+        'turnleft': 'TURNLEFT',
+        'move': 'MOVE',
+        'pickbeeper': 'PICKBEEPER',
+        'putbeeper': 'PUTBEEPER',
+        'front-is-clear': 'FRONTISCLEAR',
+        'left-is-clear': 'LEFTISCLEAR',
+        'right-is-clear': 'RIGHTISCLEAR',
+        'front-is-blocked': 'FRONTISBLOCKED',
+        'left-is-blocked': 'LEFTISBLOCKED',
+        'right-is-blocked': 'RGHTISBLOCKED',
+        'next-to-a-beeper': 'NEXTTOABEEPER',
+        'not-next-to-a-beeper': 'NOTNEXTTOABEEPER',
+        'facing-north': 'FACINGNORTH',
+        'facing-south': 'FACINGSOUTH',
+        'facing-east': 'FACINGEAST',
+        'facing-west': 'FACINGWEST',
+        'not-facing-north': 'NOTFACINGNORTH',
+        'not-facing-south': 'NOTFACINGSOUTH',
+        'not-facing-east': 'NOTFACINGEAST',
+        'not-facing-west': 'NOTFACINGWEST',
+        'any-beepers-in-beeper-bag': 'ANYBEEPERSINBEEPERBAG',
+        'no-beepers-in-beeper-bag': 'NOBEEPERSBAG'
     }
 
     tokens = [
@@ -48,7 +49,7 @@ class OurLexer(object):
         'RPAREN',
         'IDENTIFIER',
         'NUMBER'
-        ] + list(reserved.values())
+    ] + list(reserved.values())
 
     # Regular expression rules for simple tokens
 
@@ -58,61 +59,101 @@ class OurLexer(object):
     t_RPAREN = r'\)'
 
     def t_newline(self, t):
-      r'\n+'
-      t.lexer.lineno += len(t.value)
+        r'\n+'
+        t.lexer.lineno += len(t.value)
 
     def t_ID(self, token):
-      r'[a-zA-Z_][-a-zA-Z_0-9]*'
-      global reserved
-      token.type = reserved.get(token.value,'IDENTIFIER')    # Check for reserved words
+        r'[a-zA-Z_][-a-zA-Z_0-9]*'
+        global reserved
+        # Check for reserved words
+        token.type = reserved.get(token.value, 'IDENTIFIER')
 
-      return token
+        return token
 
     def t_NUMBER(self, t):
-      r'\d+'
-      t.value = int(t.value)
-      return t
+        r'\d+'
+        t.value = int(t.value)
+        return t
 
-    #ignore tabs and spaces
-    t_ignore  = ' \t'
+    # ignore tabs and spaces
+    t_ignore = ' \t'
 
     def t_error(self, t):
-      print("Illegal character '%s'" % t.value[0])
-      t.lexer.skip(1)
+        print("Illegal character '%s'" % t.value[0])
+        t.lexer.skip(1)
 
     # Build the lexer
     def build(self, **kwargs):
-      self.lexer = lex.lex(module=self, **kwargs)
-
+        self.lexer = lex.lex(module=self, **kwargs)
 
     # Test it output
     def test(self, data):
-      self.lexer.input(data)
-      while True:
-        tok = self.lexer.token()
-        if not tok:
-          break
-      print(tok.type, tok.value)
+        self.lexer.input(data)
+        while True:
+            tok = self.lexer.token()
+            if not tok:
+                break
+        print(tok.type, tok.value)
 
-    def get_tokens(self,data):
-      self.lexer.input(data)
-      token_values = []
-      while True:
-        token = self.lexer.token()
-        if not token:
-          break
-        token_values.append(token.value)
-      return token_values
+    def get_tokens(self, data):
+        self.lexer.input(data)
+        token_values = []
+        while True:
+            token = self.lexer.token()
+            if not token:
+                break
+            token_values.append(token.value)
+        return token_values
 
-    def get_tokens_types(self,data):
-      self.lexer.input(data)
-      token_types = []
-      while True:
-        token = self.lexer.token()
-        if not token:
-          break
-        token_types.append(token.type)
-      return token_types
+    def get_tokens_types(self, data):
+        self.lexer.input(data)
+        token_types = []
+        while True:
+            token = self.lexer.token()
+            if not token:
+                break
+            token_types.append(token.type)
+        return token_types
+
+# Declaracion e inicializacion de CODIGO INTERMEDIO
+    global codInter
+    codInter = []
+    for i in range(10000):
+        codInter.append(0)
+
+    # Counter para CODIGO INTERMEDIO
+    global codInterCnt
+    codInterCnt = 0
+
+    # Constantes (numeros) para funciones [deben ir en TABLA DE SIMBOLOS, no?]
+
+    global tableSim
+    tableSim = {
+        'move': 9001,
+        'turnLeft': 9002,
+        'putBeeper': 9003,
+        'pickBeeper': 9004,
+        'end': 9005
+        }
+
+class Stack:
+    def __init__(self):
+        self.items = []
+
+    def isEmpty(self):
+        return self.items == []
+
+    def push(self, item):
+        self.items.append(item)
+
+    def pop(self):
+        return self.items.pop()
+
+    def peek(self):
+        return self.items[len(self.items) - 1]
+
+    def size(self):
+        return len(self.items)
 
 # karel_program = open('karel.txt').read()
 # lexer = OurLexer()
@@ -122,15 +163,11 @@ class OurLexer(object):
 # #lexer.test(karel_program)
 
 
-
 # all_tokens = lexer.get_tokens(karel_program)
 # all_tokens.reverse()
 # print (all_tokens)
 
 # all_tokens2 = all_tokens
-
-
-
 
 
 def verificar(expected_token):
@@ -139,421 +176,429 @@ def verificar(expected_token):
     print ('VERIFICAR TIENE A {} EN LA MIRA'.format(next_token))
     return expected_token == next_token
 
+
 global counter
 counter = 0
 
+
 def verificar_identifier():
-  global all_tokens
-  next_token = all_tokens[-1]
-  print ('VERIFICANDO IDENTIFIER::::::', next_token)
-  return len(next_token) > 2 and len(next_token) < 11
+    global all_tokens
+    next_token = all_tokens[-1]
+    print ('VERIFICANDO IDENTIFIER::::::', next_token)
+    return len(next_token) > 2 and len(next_token) < 11
+
 
 def exigir_identifier():
-  global all_tokens
-  next_token = all_tokens[-1]
-  if (verificar_identifier()):
-    next_token = all_tokens.pop()
-    print('popeeeoooooo el identifier: {}'.format(next_token))
-    # global counter
-    # counter = counter + 1
-    # print (counter, all_tokens)
-    # print ('')
-  else:
-    raise Exception('function has to have length between 2 and 11')
+    global all_tokens
+    next_token = all_tokens[-1]
+    if (verificar_identifier()):
+        next_token = all_tokens.pop()
+        print('popeeeoooooo el identifier: {}'.format(next_token))
+        # global counter
+        # counter = counter + 1
+        # print (counter, all_tokens)
+        # print ('')
+    else:
+        raise Exception('function has to have length between 2 and 11')
+
 
 def exigir_numero():
-  global all_tokens
-  next_token = all_tokens[-1]
-  if (verificar_numero()):
-    next_token = all_tokens.pop()
-    print('popeeeoooooo el NUMERO: {}'.format(next_token))
+    global all_tokens
+    next_token = all_tokens[-1]
+    if (verificar_numero()):
+        next_token = all_tokens.pop()
+        print('popeeeoooooo el NUMERO: {}'.format(next_token))
+
 
 def verificar_numero():
-  global all_tokens
-  next_token = all_tokens[-1]
-  print ('VERIFICANDO NUMEROOOOO::::::', next_token)
-  return int(next_token) >= 1 and int(next_token) <= 100
+    global all_tokens
+    next_token = all_tokens[-1]
+    print ('VERIFICANDO NUMEROOOOO::::::', next_token)
+    return int(next_token) >= 1 and int(next_token) <= 100
 
 
 def exigir(expected_token):
-  global all_tokens
-  print (all_tokens, 'antes del pop')
+    global all_tokens
+    print (all_tokens, 'antes del pop')
 
-  next_token = all_tokens.pop()
-  global counter
-  counter = counter + 1
-  print (counter, all_tokens)
-  print ('')
-  return expected_token == next_token
+    next_token = all_tokens.pop()
+    global counter
+    counter = counter + 1
+    print (counter, all_tokens)
+    print ('')
+    return expected_token == next_token
+
 
 def mostrarError():
     raise Exception('Unexpected token!!!')
 
 
-
-
-#------TERMINADO------
+#------PENDIENTE_CI------
 #<program> ::= "class" "program" "{" <functions> <main function> "}"
 def program():
-  if ( exigir("class") ):
-    if ( exigir("program") ):
-      if ( exigir("{") ):
-        functions()
-        main_function()
-        if ( not exigir("}") ):
-          mostrarError()
-      else:
-          mostrarError()
+    if (exigir("class")):
+        if (exigir("program")):
+            if (exigir("{")):
+                functions()
+                main_function()
+                if (not exigir("}")):
+                    mostrarError()
+            else:
+                mostrarError()
+        else:
+            mostrarError()
     else:
         mostrarError()
-  else:
-      mostrarError()
 
 
-#------TERMINADO------
+#------PENDIENTE_CI------
 #<functions> ::= <function> <functions prima> | lambda
 def functions():
-  if (verificar("void")):
-    function()
-    functions_prima()
+    if (verificar("void")):
+        function()
+        functions_prima()
 
 
-
-#------TERMINADO------
+#------PENDIENTE_CI------
 #<functions prima> ::= <function> <functions prima> | lambda
 def functions_prima():
-  if (verificar("void")):
-    function()
-    functions_prima()
+    if (verificar("void")):
+        function()
+        functions_prima()
 
 
-
-#------TERMINADO------
+#------PENDIENTE_CI------
 def main_function():
-  if (exigir ("program") ):
-    if (exigir ("(") ):
-      if (exigir (")") ):
-        if (exigir ("{")):
-          body()
-          if (not exigir("}")):
-            mostrarError()
+    if (exigir("program")):
+        if (exigir("(")):
+            if (exigir(")")):
+                if (exigir("{")):
+                    body()
+                    if (not exigir("}")):
+                        mostrarError()
+                else:
+                    mostrarError()
+            else:
+                mostrarError()
         else:
-           mostrarError()
-      else:
-         mostrarError()
+            mostrarError()
     else:
-       mostrarError()
-  else:
-     mostrarError()
+        mostrarError()
 
 
-#------TERMINADO------
-#<function> ::= "void" <name function> "("  ")" "{" <body> "}"
+#------PENDIENTE_CI------
+#<function> ::= "void" <name function> "("    ")" "{" <body> "}"
 def function():
-  print ('CORRIENDO FUNCIOOOOOOOOOOOOOOOOOOOOOOOOON')
-  if (exigir("void")):
-    name_function()
-    if (exigir("(")):
-      if (exigir(")")):
-        print ('EXIJO BRACKETS EN FUNCTION')
-        if (exigir("{")):
-          body()
-          if (not exigir("}")):
-            mostrarError()
+    print ('CORRIENDO FUNCIOOOOOOOOOOOOOOOOOOOOOOOOON')
+    if (exigir("void")):
+        name_function() #HERE
+        if (exigir("(")):
+            if (exigir(")")):
+                print ('EXIJO BRACKETS EN FUNCTION')
+                if (exigir("{")):
+                    body()
+                    if (not exigir("}")):
+                        mostrarError()
+                else:
+                    mostrarError()
+            else:
+                mostrarError()
         else:
-           mostrarError()
-      else:
-         mostrarError()
+            mostrarError()
     else:
-       mostrarError()
-  else:
-     mostrarError()
+        mostrarError()
 
 
-#------TERMINADO------
+#------PENDIENTE_CI------
 #<body> ::= <expression> <body prima>
 def body():
-  print ('expresssion llamada en body normalito')
-  expression()
-  body_prima()
-
-
-#------TERMINADO------
-#<body prima> ::= <expression> <body prima> | lambda
-def body_prima():
-  print ('entra a body prima ')
-
-  if ( verificar("if") or verificar( "while" ) or verificar( "iterate" ) or verificar('move') or verificar("turnLeft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end") or verificar_identifier()):
+    print ('expresssion llamada en body normalito')
     expression()
     body_prima()
-  #else lambda
 
 
-#------TERMINADO------
+#------PENDIENTE_CI------
+#<body prima> ::= <expression> <body prima> | lambda
+def body_prima():
+    print ('entra a body prima ')
+
+    if (verificar("if") or verificar("while") or verificar("iterate") or verificar('move') or verificar("turnLeft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end") or verificar_identifier()):
+        expression()
+        body_prima()
+    # else lambda
+
+
+#------PENDIENTE_CI------
 #<expression> ::= <call function> | <if expression> | <while expression> | <iterate expression>
 def expression():
-  if ( verificar("if") ):
-    if_expression()
-  elif ( verificar( "while" ) ):
-    while_expression()
-  elif ( verificar( "iterate" ) ):
-    iterate_expression()
-  else:
-    call_function()
+    if (verificar("if")):
+        if_expression()
+    elif (verificar("while")):
+        while_expression()
+    elif (verificar("iterate")):
+        iterate_expression()
+    else:
+        call_function()
 
 
-
-#------TERMINADO------
-#verificar que no es palabra reservada
+#------PENDIENTE_CI------
+# verificar que no es palabra reservada
 # <call function> ::= <name function> "(" ")"
 def call_function():
-  name_function()
-  print ('exigiendo parentesis en call function')
+    name_function()
+    print ('exigiendo parentesis en call function')
 
-  if (exigir("(")):
-    if (not exigir(")")):
-      mostrarError()
-  else:
-    mostrarError()
-  print ('CALL FUNCTION, SE CHINGO PARENTESIS')
+    if (exigir("(")):
+        if (not exigir(")")):
+            mostrarError()
+    else:
+        mostrarError()
+    print ('CALL FUNCTION, SE CHINGO PARENTESIS')
 
+def setCodeInsideCodigoIntermedio(word_to_find):
+    print('Setting {} in Codigo Intermedio'.format(word_to_find))
+    if(word_to_find in tableSim):
+        codInter[codInterCnt] = tableSim[word_to_find]
+        print('{} is the code to insert in codInter[{}]'.format(codInter[codInterCnt], codInterCnt))
+        for x in range(0, 10):
+            print(codInter[x])
+        
 
-#------TERMINADO------
+#------PENDIENTE_CI------
 #<name function> ::= <official function> | <customer function>
 def name_function():
-  if (verificar('move') or verificar("turnLeft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end")):
-    print ('obviamente entre a official fucntion')
-    official_function()
-  else:
-    customer_function()
+    if (verificar('move') or verificar("turnLeft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end")):
+        print ('obviamente entre a official fucntion')
+        next_token = all_tokens[-1]
+        setCodeInsideCodigoIntermedio(next_token)
+        codInterCnt = codInterCnt + 1
+        official_function()
+    else:
+        customer_function()
+
 
 def customer_function():
-  global all_tokens
-  next_token = all_tokens[-1]
-  print('CUSTOMER FUNCTION TOKEN {}'.format(next_token))
-  exigir_identifier()
+    global all_tokens
+    next_token = all_tokens[-1]
+    print('CUSTOMER FUNCTION TOKEN {}'.format(next_token))
+    exigir_identifier()
 
-#------TERMINADO------
-#<if expression> ::= "if" "(" <condition> ")" "{" <body>  "}" <else>
+#------PENDIENTE_CI------
+#<if expression> ::= "if" "(" <condition> ")" "{" <body>    "}" <else>
+
+
 def if_expression():
-  if (exigir("if")):
-    if (exigir("(")):
-      condition()
-      if (exigir(")")):
-        if (exigir("{")):
-          body()
-          if (exigir("}")):
-            else_expression()
-          else:
-             mostrarError()
+    if (exigir("if")):
+        if (exigir("(")):
+            condition()
+            if (exigir(")")):
+                if (exigir("{")):
+                    body()
+                    if (exigir("}")):
+                        else_expression()
+                    else:
+                        mostrarError()
+                else:
+                    mostrarError()
+            else:
+                mostrarError()
         else:
-           mostrarError()
-      else:
-         mostrarError()
-    else:
-       mostrarError()
-  else:
-     mostrarError()
-
-
-#------TERMINADO------
-#<else> ::= "else" "{" <body> "}"  | lambda
-def else_expression():
-  if (verificar("else")):
-    if (exigir("else")):
-      if (exigir("{")):
-        body()
-        if (not exigir("}")):
             mostrarError()
-      else:
-        mostrarError()
     else:
-      mostrarError()
-  #else Lambda
+        mostrarError()
 
 
-#------TERMINADO------
+#------PENDIENTE_CI------
+#<else> ::= "else" "{" <body> "}"    | lambda
+def else_expression():
+    if (verificar("else")):
+        if (exigir("else")):
+            if (exigir("{")):
+                body()
+                if (not exigir("}")):
+                    mostrarError()
+            else:
+                mostrarError()
+        else:
+            mostrarError()
+    # else Lambda
+
+
+#------PENDIENTE_CI------
 #<while> ::= "while" "(" <condition> ")" "{" <body> "}"
 def while_expression():
-  if (exigir("while")):
-    if (exigir("(")):
-      condition()
-      if (exigir(")")):
-        if (exigir("{")):
-          body()
-          if (not exigir("}")):
-            mostrarError()
+    if (exigir("while")):
+        if (exigir("(")):
+            condition()
+            if (exigir(")")):
+                if (exigir("{")):
+                    body()
+                    if (not exigir("}")):
+                        mostrarError()
+                else:
+                    mostrarError()
+            else:
+                mostrarError()
         else:
-           mostrarError()
-      else:
-         mostrarError()
+            mostrarError()
     else:
-       mostrarError()
-  else:
-     mostrarError()
+        mostrarError()
 
 
-#------TERMINADO------
+#------PENDIENTE_CI------
 #<iterate expression> ::= "iterate" "(" <number> ")" "{" <body> "}"
 def iterate_expression():
-  if (exigir("iterate")):
-    if (exigir("(")):
-      number()
-      if (exigir(")")):
-        if (exigir("{")):
-          body()
-          if (not exigir("}")):
-            mostrarError()
+    if (exigir("iterate")):
+        if (exigir("(")):
+            number()
+            if (exigir(")")):
+                if (exigir("{")):
+                    body()
+                    if (not exigir("}")):
+                        mostrarError()
+                else:
+                    mostrarError()
+            else:
+                mostrarError()
         else:
-           mostrarError()
-      else:
-         mostrarError()
+            mostrarError()
     else:
-       mostrarError()
-  else:
-     mostrarError()
+        mostrarError()
 
 
-
-#------TERMINADO------
+#------PENDIENTE_CI------
 #<condition> ::=
-  # "front-is-clear" |
-  # "left-is-clear" |
-  # "right-is-clear" |
-  # "front-is-blocked" |
-  # "left-is-blocked" |
-  # "right-is-blocked" |
-  # "next-to-a-beeper" |
-  # "not-next to a beeper" |
-  # "facing-north" |
-  # "facing-south" |
-  # "facing-east" |
-  # "facing-west" |
-  # "not-facing-north" |
-  # "not-facing-south" |
-  # "not-facing-east" |
-  # "not-facing-west" |
-  # "any-beepers-in-beeper-bag" |
-  # "no-beepers-in-beeper-bag"
+    # "front-is-clear" |
+    # "left-is-clear" |
+    # "right-is-clear" |
+    # "front-is-blocked" |
+    # "left-is-blocked" |
+    # "right-is-blocked" |
+    # "next-to-a-beeper" |
+    # "not-next to a beeper" |
+    # "facing-north" |
+    # "facing-south" |
+    # "facing-east" |
+    # "facing-west" |
+    # "not-facing-north" |
+    # "not-facing-south" |
+    # "not-facing-east" |
+    # "not-facing-west" |
+    # "any-beepers-in-beeper-bag" |
+    # "no-beepers-in-beeper-bag"
 def condition():
-  if (verificar("front-is-clear")):
-    exigir("front-is-clear")
+    if (verificar("front-is-clear")):
+        exigir("front-is-clear")
 
-  elif (verificar("left-is-clear")):
-    exigir("left-is-clear")
+    elif (verificar("left-is-clear")):
+        exigir("left-is-clear")
 
-  elif (verificar("right-is-clear")):
-    exigir("right-is-clear")
+    elif (verificar("right-is-clear")):
+        exigir("right-is-clear")
 
-  elif (verificar("front-is-blocked")):
-    exigir("front-is-blocked")
+    elif (verificar("front-is-blocked")):
+        exigir("front-is-blocked")
 
-  elif (verificar("left-is-blocked")):
-    exigir("left-is-blocked")
+    elif (verificar("left-is-blocked")):
+        exigir("left-is-blocked")
 
-  elif (verificar("right-is-blocked")):
-    exigir("right-is-blocked")
+    elif (verificar("right-is-blocked")):
+        exigir("right-is-blocked")
 
-  elif (verificar("next-to-a-beeper")):
-    exigir("next-to-a-beeper")
+    elif (verificar("next-to-a-beeper")):
+        exigir("next-to-a-beeper")
 
-  elif (verificar("not-next-to-a-beeper")):
-    exigir("not-next-to-a-beeper")
+    elif (verificar("not-next-to-a-beeper")):
+        exigir("not-next-to-a-beeper")
 
-  elif (verificar("facing-north")):
-    exigir("facing-north")
+    elif (verificar("facing-north")):
+        exigir("facing-north")
 
-  elif (verificar("facing-south")):
-    exigir("facing-south")
+    elif (verificar("facing-south")):
+        exigir("facing-south")
 
-  elif (verificar("facing-east")):
-    exigir("facing-east")
+    elif (verificar("facing-east")):
+        exigir("facing-east")
 
-  elif (verificar("facing-west")):
-    exigir("facing-west")
+    elif (verificar("facing-west")):
+        exigir("facing-west")
 
-  elif (verificar("not-facing-north")):
-    exigir("not-facing-north")
+    elif (verificar("not-facing-north")):
+        exigir("not-facing-north")
 
-  elif (verificar("not-facing-south")):
-    exigir("not-facing-south")
+    elif (verificar("not-facing-south")):
+        exigir("not-facing-south")
 
-  elif (verificar("not-facing-east")):
-    exigir("not-facing-east")
+    elif (verificar("not-facing-east")):
+        exigir("not-facing-east")
 
-  elif (verificar("not-facing-west")):
-    exigir("not-facing-west")
+    elif (verificar("not-facing-west")):
+        exigir("not-facing-west")
 
-  elif (verificar("any-beepers-in-beeper-bag")):
-    exigir("any-beepers-in-beeper-bag")
+    elif (verificar("any-beepers-in-beeper-bag")):
+        exigir("any-beepers-in-beeper-bag")
 
-  elif (verificar("no-beepers-in-beeper-bag")):
-    exigir("no-beepers-in-beeper-bag")
+    elif (verificar("no-beepers-in-beeper-bag")):
+        exigir("no-beepers-in-beeper-bag")
 
-  else:
-    mostrarError()
+    else:
+        mostrarError()
 
 
-#------TERMINADO------
+#------PENDIENTE_CI------
 #<official function> ::= "move" | "turnLeft" | "pickBeeper" | "putBeeper" | "end"
 def official_function():
-  print ('official FUNCTIOOOOOOOOOOON')
-  if (verificar("move")):
-    print('POP DE MOVEEEEEEEEEEEEEEEEEEEEEE')
-    exigir("move")
-  elif (verificar("turnLeft")):
-    exigir("turnLeft")
-  elif (verificar("pickBeeper")):
-    exigir("pickBeeper")
-  elif (verificar("putBeeper")):
-    exigir("putBeeper")
-  elif (verificar("end")):
-    exigir("end")
-  else:
-    mostrarError()
+    print ('official FUNCTIOOOOOOOOOOON')
+    if (verificar("move")):
+        print('POP DE MOVEEEEEEEEEEEEEEEEEEEEEE')
+        exigir("move")
+    elif (verificar("turnLeft")):
+        exigir("turnLeft")
+    elif (verificar("pickBeeper")):
+        exigir("pickBeeper")
+    elif (verificar("putBeeper")):
+        exigir("putBeeper")
+    elif (verificar("end")):
+        exigir("end")
+    else:
+        mostrarError()
 
 #------SIN TERMINAR------
 #<number> ::= numero natural del 1 al 100
-def number():
-  exigir_numero()
 
+
+def number():
+    exigir_numero()
 
 
 karel_program = open('karel.txt').read()
 lexer = OurLexer()
 lexer.build()
 
+stackEstructuras = Stack()
 
-#lexer.test(karel_program)
-
+# lexer.test(karel_program)
 
 
 all_tokens = lexer.get_tokens(karel_program)
 #token_types = lexer.get_tokens_types(karel_program)
 
-#token_types.reverse()
+# token_types.reverse()
 all_tokens.reverse()
 #print (all_tokens)
 
 
-#Pa debuggear
+# Pa debuggear
 #print (all_tokens)
 #print (token_types)
-
-
 
 
 program()
 
 
-
-
 #------SIN TERMINAR------
-#aquí vamos a comparar con todas las palabras reservadas (no todos los tokens, solo las palabras reservadas).
+# aqui vamos a comparar con todas las palabras reservadas (no todos los tokens, solo las palabras reservadas).
 #<customer function> ::= palabra de mas de 2 caracteres y menos de `11
-#def customer_function(){
+# def customer_function(){
 
 #}
-
-
-
