@@ -136,15 +136,15 @@ class OurLexer(object):
     global symbol_table
     symbol_table = {
       # if iterate
-      'if': 10,
-      'while': 10,
-      'iterate': 20,
-      'JMP': 30,
-      'RET': 40,
+      'if': 510,
+      'while': 550,
+      'iterate': 520,
+      'JMP': 530,
+      'RET': 540,
 
       #official functions
       'move': 9001,
-      'turnLeft': 9002,
+      'turnleft': 9002,
       'putBeeper': 9003,
       'pickBeeper': 9004,
       'end': 9005,
@@ -267,7 +267,7 @@ def add_code_in_ci(word_to_find):
 
 def print_ci():
     print('#################')
-    for x in range(0, 10):
+    for x in range(0, 30):
       print(x,ci_list[x])
     print('#################')
 
@@ -380,7 +380,7 @@ def body():
 def body_prima():
     print ('entra a body prima ')
 
-    if (verificar("if") or verificar("while") or verificar("iterate") or verificar('move') or verificar("turnLeft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end") or verificar_identifier()):
+    if (verificar("if") or verificar("while") or verificar("iterate") or verificar('move') or verificar("turnleft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end") or verificar_identifier()):
         expression()
         body_prima()
     # else lambda
@@ -417,7 +417,7 @@ def call_function():
 #------PENDIENTE_CI------
 #<name function> ::= <official function> | <customer function>
 def name_function():
-    if (verificar('move') or verificar("turnLeft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end")):
+    if (verificar('move') or verificar("turnleft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end")):
         print ('obviamente entre a official fucntion')
         next_token = all_tokens[-1]
         add_code_in_ci(next_token)
@@ -516,6 +516,7 @@ def while_expression():
                     add_code_in_ci("JMP")
                     print(actual_position, 'poooooooop')
                     ci_list[ci_count] = stack_positions.pop()
+                    add_one_to_ci()
                     print_ci()
                 else:
                     mostrarError("{")
@@ -553,6 +554,7 @@ def iterate_expression():
                     add_code_in_ci("JMP")
                     print(actual_position, 'poooooooop')
                     ci_list[ci_count] = stack_positions.pop()
+                    add_one_to_ci()
                     print_ci()
                 else:
                     mostrarError("{")
@@ -646,14 +648,14 @@ def condition():
     add_code_in_ci(next_token)
 
 #------PENDIENTE_CI------
-#<official function> ::= "move" | "turnLeft" | "pickBeeper" | "putBeeper" | "end"
+#<official function> ::= "move" | "turnleft" | "pickBeeper" | "putBeeper" | "end"
 def official_function():
     print ('official FUNCTIOOOOOOOOOOON')
     if (verificar("move")):
         print('POP DE MOVEEEEEEEEEEEEEEEEEEEEEE')
         exigir("move")
-    elif (verificar("turnLeft")):
-        exigir("turnLeft")
+    elif (verificar("turnleft")):
+        exigir("turnleft")
     elif (verificar("pickBeeper")):
         exigir("pickBeeper")
     elif (verificar("putBeeper")):

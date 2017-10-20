@@ -1,10 +1,14 @@
 class program {
-
-    program() {
-        move()
-        iterate(3){
-            move()
-        }
+  program() {
+    move()
+    while ( front-is-clear ) {
+      move()
+      if ( next-to-a-beeper ) {
+        pickBeeper()
+      } else {
+        putBeeper()
+      }
     }
+    end()
+  }
 }
-
