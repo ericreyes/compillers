@@ -3,8 +3,7 @@ class program {
     program() {
         if(front-is-clear){
             move()
-        }
-        else{
+        } else {
             turnLeft()
         }
     }

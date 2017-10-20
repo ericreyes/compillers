@@ -135,6 +135,8 @@ class OurLexer(object):
       # if iterate
       'if': 10,
       'iterate': 20,
+      'JMP': 30,
+      'RET': 40,
 
       #official functions
       'move': 9001,
@@ -275,6 +277,8 @@ def program():
     if (exigir("class")):
         if (exigir("program")):
             if (exigir("{")):
+                add_code_in_ci("JMP")
+                #store_position_for_later(ci_count)
                 functions()
                 main_function()
                 if (not exigir("}")):
@@ -306,6 +310,7 @@ def functions_prima():
 #------PENDIENTE_CI------
 def main_function():
     if (exigir("program")):
+        add_code_in_ci("PROGRAM")
         if (exigir("(")):
             if (exigir(")")):
                 if (exigir("{")):
@@ -336,6 +341,7 @@ def function():
                     body()
                     if (not exigir("}")):
                         mostrarError("}")
+                        add_code_in_ci("RET")
                 else:
                     mostrarError("{")
             else:
@@ -419,9 +425,13 @@ def customer_function():
 
 
 def if_expression():
+    global ci_count
     if (exigir("if")):
+        add_code_in_ci("if")
         if (exigir("(")):
             condition()
+            add_code_in_ci("JMP")
+            #STACK empieza con "3" para
             if (exigir(")")):
                 if (exigir("{")):
                     body()
@@ -519,6 +529,9 @@ def iterate_expression():
     # "any-beepers-in-beeper-bag" |
     # "no-beepers-in-beeper-bag"
 def condition():
+    global all_tokens
+    next_token = all_tokens[-1]
+
     if (verificar("front-is-clear")):
         exigir("front-is-clear")
 
@@ -572,10 +585,9 @@ def condition():
 
     elif (verificar("no-beepers-in-beeper-bag")):
         exigir("no-beepers-in-beeper-bag")
-
     else:
         mostrarError("a defined condition")
-
+        add_code_in_ci(next_token)
 
 #------PENDIENTE_CI------
 #<official function> ::= "move" | "turnLeft" | "pickBeeper" | "putBeeper" | "end"
@@ -626,10 +638,3 @@ all_tokens.reverse()
 
 program()
 
-
-#------SIN TERMINAR------
-# aqui vamos a comparar con todas las palabras reservadas (no todos los tokens, solo las palabras reservadas).
-#<customer function> ::= palabra de mas de 2 caracteres y menos de `11
-# def customer_function(){
-
-#}
