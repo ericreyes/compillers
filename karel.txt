@@ -2,7 +2,7 @@ class program {
 
     program() {
         move()
-        while(front-is-clear){
+        iterate(3){
             move()
         }
     }

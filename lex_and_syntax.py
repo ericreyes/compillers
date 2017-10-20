@@ -249,6 +249,12 @@ def add_one_to_ci():
     global ci_count
     ci_count += 1
 
+def add_num_in_ci(number):
+    global ci_count
+    ci_list[ci_count] = number
+    add_one_to_ci()
+
+
 def add_code_in_ci(word_to_find):
     global ci_count
     print('Setting {} in Codigo Intermedio'.format(word_to_find))
@@ -524,14 +530,30 @@ def while_expression():
 #------PENDIENTE_CI------
 #<iterate expression> ::= "iterate" "(" <number> ")" "{" <body> "}"
 def iterate_expression():
+    global ci_count
+    global all_tokens
     if (exigir("iterate")):
+        stack_positions.append(ci_count)
+        add_code_in_ci("iterate")
         if (exigir("(")):
+            print(all_tokens[-1],'IMPRIMIR EL NUMERO 3')
+            add_num_in_ci(all_tokens[-1])
             number()
+            add_code_in_ci("JMP")
+            stack_positions.append(ci_count)
+            add_one_to_ci()
             if (exigir(")")):
                 if (exigir("{")):
                     body()
                     if (not exigir("}")):
                         mostrarError("}")
+                    actual_position = stack_positions.pop()
+                    print(actual_position, 'poooooooop')
+                    ci_list[actual_position] = ci_count + 2
+                    add_code_in_ci("JMP")
+                    print(actual_position, 'poooooooop')
+                    ci_list[ci_count] = stack_positions.pop()
+                    print_ci()
                 else:
                     mostrarError("{")
             else:
