@@ -1,10 +1,9 @@
 class program {
 
     program() {
-        if(front-is-clear){
+        move()
+        while(front-is-clear){
             move()
-        } else {
-            turnLeft()
         }
     }
 }

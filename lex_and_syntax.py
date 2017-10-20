@@ -137,6 +137,7 @@ class OurLexer(object):
     symbol_table = {
       # if iterate
       'if': 10,
+      'while': 10,
       'iterate': 20,
       'JMP': 30,
       'RET': 40,
@@ -189,7 +190,7 @@ class OurLexer(object):
 def verificar(expected_token):
     global all_tokens
     next_token = all_tokens[-1]
-    print ('VERIFICAR TIENE A {} EN LA MIRA'.format(next_token))
+    #print ('VERIFICAR TIENE A {} EN LA MIRA'.format(next_token))
     return expected_token == next_token
 
 
@@ -200,7 +201,7 @@ counter = 0
 def verificar_identifier():
     global all_tokens
     next_token = all_tokens[-1]
-    print ('VERIFICANDO IDENTIFIER::::::', next_token)
+    #print ('VERIFICANDO IDENTIFIER::::::', next_token)
     return len(next_token) > 2 and len(next_token) < 11
 
 
@@ -209,7 +210,7 @@ def exigir_identifier():
     next_token = all_tokens[-1]
     if (verificar_identifier()):
         next_token = all_tokens.pop()
-        print('popeeeoooooo el identifier: {}'.format(next_token))
+        #print('popeeeoooooo el identifier: {}'.format(next_token))
         # global counter
         # counter = counter + 1
         # print (counter, all_tokens)
@@ -223,19 +224,19 @@ def exigir_numero():
     next_token = all_tokens[-1]
     if (verificar_numero()):
         next_token = all_tokens.pop()
-        print('popeeeoooooo el NUMERO: {}'.format(next_token))
+        #print('popeeeoooooo el NUMERO: {}'.format(next_token))
 
 
 def verificar_numero():
     global all_tokens
     next_token = all_tokens[-1]
-    print ('VERIFICANDO NUMEROOOOO::::::', next_token)
+    #print ('VERIFICANDO NUMEROOOOO::::::', next_token)
     return int(next_token) >= 1 and int(next_token) <= 100
 
 
 def exigir(expected_token):
     global all_tokens
-    print (all_tokens, 'antes del pop')
+    #print (all_tokens, 'antes del pop')
 
     next_token = all_tokens.pop()
     global counter
@@ -254,12 +255,16 @@ def add_code_in_ci(word_to_find):
     if(word_to_find in symbol_table):
         ci_list[ci_count] = symbol_table[word_to_find]
         print('{} is the code to insert in ci_list[{}]'.format(ci_list[ci_count], ci_count))
-        print('#################')
         print('adding' , word_to_find, ci_count)
-        for x in range(0, 10):
-          print(ci_list[x])
-        print('#################')
+        print_ci()
     add_one_to_ci()
+
+def print_ci():
+    print('#################')
+    for x in range(0, 10):
+      print(x,ci_list[x])
+    print('#################')
+
 
 def add_symbol_to_table(symbol):
   global symbol_table
@@ -435,7 +440,8 @@ def if_expression():
         if (exigir("(")):
             condition()
             add_code_in_ci("JMP")
-            #STACK empieza con "3" para
+            stack_positions.append(ci_count)
+            add_one_to_ci()
             if (exigir(")")):
                 if (exigir("{")):
                     body()
@@ -459,10 +465,21 @@ def if_expression():
 def else_expression():
     if (verificar("else")):
         if (exigir("else")):
+            add_code_in_ci("JMP")
+            actual_position = stack_positions.pop()
+            print(actual_position, 'poooooooop')
+            ci_list[actual_position] = ci_count + 1
+
+            stack_positions.append(ci_count)
+            add_one_to_ci()
             if (exigir("{")):
                 body()
                 if (not exigir("}")):
                     mostrarError("}")
+                actual_position = stack_positions.pop()
+                print(actual_position, 'poooooooop')
+                ci_list[actual_position] = ci_count
+                print_ci()
             else:
                 mostrarError("{")
         else:
@@ -473,14 +490,27 @@ def else_expression():
 #------PENDIENTE_CI------
 #<while> ::= "while" "(" <condition> ")" "{" <body> "}"
 def while_expression():
+    global ci_count
     if (exigir("while")):
+        stack_positions.append(ci_count)
+        add_code_in_ci("while")
         if (exigir("(")):
             condition()
+            add_code_in_ci("JMP")
+            stack_positions.append(ci_count)
+            add_one_to_ci()
             if (exigir(")")):
                 if (exigir("{")):
                     body()
                     if (not exigir("}")):
                         mostrarError("}")
+                    actual_position = stack_positions.pop()
+                    print(actual_position, 'poooooooop')
+                    ci_list[actual_position] = ci_count + 2
+                    add_code_in_ci("JMP")
+                    print(actual_position, 'poooooooop')
+                    ci_list[ci_count] = stack_positions.pop()
+                    print_ci()
                 else:
                     mostrarError("{")
             else:
@@ -591,7 +621,7 @@ def condition():
         exigir("no-beepers-in-beeper-bag")
     else:
         mostrarError("a defined condition")
-        add_code_in_ci(next_token)
+    add_code_in_ci(next_token)
 
 #------PENDIENTE_CI------
 #<official function> ::= "move" | "turnLeft" | "pickBeeper" | "putBeeper" | "end"
