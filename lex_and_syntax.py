@@ -116,6 +116,9 @@ class OurLexer(object):
         return token_types
 
 # Declaracion e inicializacion de CODIGO INTERMEDIO
+    global stack_positions
+    stack_positions = []
+
     global ci_list
     ci_list = []
     for i in range(10000):
@@ -126,7 +129,7 @@ class OurLexer(object):
     global symbol_count
 
 
-    ci_count = 0
+    ci_count = -1
 
     # Constantes (numeros) para funciones [deben ir en TABLA DE SIMBOLOS, no?]
 
@@ -241,6 +244,10 @@ def exigir(expected_token):
     print ('')
     return expected_token == next_token
 
+def add_one_to_ci():
+    global ci_count
+    ci_count += 1
+
 def add_code_in_ci(word_to_find):
     global ci_count
     print('Setting {} in Codigo Intermedio'.format(word_to_find))
@@ -248,12 +255,11 @@ def add_code_in_ci(word_to_find):
         ci_list[ci_count] = symbol_table[word_to_find]
         print('{} is the code to insert in ci_list[{}]'.format(ci_list[ci_count], ci_count))
         print('#################')
-        print('adding' , word_to_find)
+        print('adding' , word_to_find, ci_count)
         for x in range(0, 10):
           print(ci_list[x])
         print('#################')
-
-    ci_count = ci_count + 1
+    add_one_to_ci()
 
 def add_symbol_to_table(symbol):
   global symbol_table
@@ -277,8 +283,6 @@ def program():
     if (exigir("class")):
         if (exigir("program")):
             if (exigir("{")):
-                add_code_in_ci("JMP")
-                #store_position_for_later(ci_count)
                 functions()
                 main_function()
                 if (not exigir("}")):
