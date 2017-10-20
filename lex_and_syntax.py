@@ -265,8 +265,8 @@ def add_symbol_to_table(symbol):
 #------------------------------------------------------------------------------------------------
 
 
-def mostrarError():
-    raise Exception('Unexpected token!!!')
+def mostrarError(expected_token):
+    raise Exception('Syntax Error: Expected {}.'.format(expected_token))
 
 
 #------PENDIENTE_CI------
@@ -278,13 +278,13 @@ def program():
                 functions()
                 main_function()
                 if (not exigir("}")):
-                    mostrarError()
+                    mostrarError("}")
             else:
-                mostrarError()
+                mostrarError("{")
         else:
-            mostrarError()
+            mostrarError("program")
     else:
-        mostrarError()
+        mostrarError("class")
 
 
 #------PENDIENTE_CI------
@@ -311,15 +311,15 @@ def main_function():
                 if (exigir("{")):
                     body()
                     if (not exigir("}")):
-                        mostrarError()
+                        mostrarError("}")
                 else:
-                    mostrarError()
+                    mostrarError("{")
             else:
-                mostrarError()
+                mostrarError(")")
         else:
-            mostrarError()
+            mostrarError("(")
     else:
-        mostrarError()
+        mostrarError("program")
 
 
 #------PENDIENTE_CI------
@@ -335,15 +335,15 @@ def function():
                 if (exigir("{")):
                     body()
                     if (not exigir("}")):
-                        mostrarError()
+                        mostrarError("}")
                 else:
-                    mostrarError()
+                    mostrarError("{")
             else:
-                mostrarError()
+                mostrarError(")")
         else:
-            mostrarError()
+            mostrarError("(")
     else:
-        mostrarError()
+        mostrarError("void")
 
 
 #------PENDIENTE_CI------
@@ -387,9 +387,9 @@ def call_function():
 
     if (exigir("(")):
         if (not exigir(")")):
-            mostrarError()
+            mostrarError(")")
     else:
-        mostrarError()
+        mostrarError("(")
     print ('CALL FUNCTION, SE CHINGO PARENTESIS')
 
 
@@ -429,15 +429,15 @@ def if_expression():
                     if (exigir("}")):
                         else_expression()
                     else:
-                        mostrarError()
+                        mostrarError("}")
                 else:
-                    mostrarError()
+                    mostrarError("{")
             else:
-                mostrarError()
+                mostrarError(")")
         else:
-            mostrarError()
+            mostrarError("(")
     else:
-        mostrarError()
+        mostrarError("if")
 
 
 #------PENDIENTE_CI------
@@ -448,11 +448,11 @@ def else_expression():
             if (exigir("{")):
                 body()
                 if (not exigir("}")):
-                    mostrarError()
+                    mostrarError("}")
             else:
-                mostrarError()
+                mostrarError("{")
         else:
-            mostrarError()
+            mostrarError("else")
     # else Lambda
 
 
@@ -466,15 +466,15 @@ def while_expression():
                 if (exigir("{")):
                     body()
                     if (not exigir("}")):
-                        mostrarError()
+                        mostrarError("}")
                 else:
-                    mostrarError()
+                    mostrarError("{")
             else:
-                mostrarError()
+                mostrarError(")")
         else:
-            mostrarError()
+            mostrarError("(")
     else:
-        mostrarError()
+        mostrarError("while")
 
 
 #------PENDIENTE_CI------
@@ -487,15 +487,15 @@ def iterate_expression():
                 if (exigir("{")):
                     body()
                     if (not exigir("}")):
-                        mostrarError()
+                        mostrarError("}")
                 else:
-                    mostrarError()
+                    mostrarError("{")
             else:
-                mostrarError()
+                mostrarError(")")
         else:
-            mostrarError()
+            mostrarError("(")
     else:
-        mostrarError()
+        mostrarError("iterate")
 
 
 #------PENDIENTE_CI------
@@ -574,7 +574,7 @@ def condition():
         exigir("no-beepers-in-beeper-bag")
 
     else:
-        mostrarError()
+        mostrarError("a defined condition")
 
 
 #------PENDIENTE_CI------
@@ -593,7 +593,7 @@ def official_function():
     elif (verificar("end")):
         exigir("end")
     else:
-        mostrarError()
+        mostrarError("a defined function")
 
 #------SIN TERMINAR------
 #<number> ::= numero natural del 1 al 100
