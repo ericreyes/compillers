@@ -129,7 +129,7 @@ class OurLexer(object):
     global symbol_count
 
 
-    ci_count = -1
+    ci_count = 0
 
     # Constantes (numeros) para funciones [deben ir en TABLA DE SIMBOLOS, no?]
 
@@ -148,6 +148,7 @@ class OurLexer(object):
       'putBeeper': 9003,
       'pickBeeper': 9004,
       'end': 9005,
+      'program': 9010,
       #conditionals
       'front-is-clear': 8001,
       'left-is-clear': 8002,
@@ -241,8 +242,8 @@ def exigir(expected_token):
     next_token = all_tokens.pop()
     global counter
     counter = counter + 1
-    print (counter, all_tokens)
-    print ('')
+    #print (counter, all_tokens)
+    #print ('')
     return expected_token == next_token
 
 def add_one_to_ci():
@@ -276,8 +277,11 @@ def add_symbol_to_table(symbol):
   global symbol_table
   global symbol_count
   symbol_count += 1
+  print(symbol_table)
+  print('ANTEEEEEESSSSSS')
   symbol_table.update({symbol: symbol_count})
-  print(symbol_table, 'AGREGUE UNA FUNCION, BIEN VERGA')
+  print(symbol_table)
+  print('AGREGUE UNA FUNCION, BIEN VERGA')
 
 
 
@@ -325,7 +329,7 @@ def functions_prima():
 #------PENDIENTE_CI------
 def main_function():
     if (exigir("program")):
-        add_code_in_ci("PROGRAM")
+        add_code_in_ci("program")
         if (exigir("(")):
             if (exigir(")")):
                 if (exigir("{")):
@@ -378,7 +382,7 @@ def body():
 #------PENDIENTE_CI------
 #<body prima> ::= <expression> <body prima> | lambda
 def body_prima():
-    print ('entra a body prima ')
+    #print ('entra a body prima ')
 
     if (verificar("if") or verificar("while") or verificar("iterate") or verificar('move') or verificar("turnleft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end") or verificar_identifier()):
         expression()
@@ -399,26 +403,27 @@ def expression():
         call_function()
 
 
+
 #------PENDIENTE_CI------
 # verificar que no es palabra reservada
 # <call function> ::= <name function> "(" ")"
 def call_function():
     name_function()
-    print ('exigiendo parentesis en call function')
+    #print ('exigiendo parentesis en call function')
 
     if (exigir("(")):
         if (not exigir(")")):
             mostrarError(")")
     else:
         mostrarError("(")
-    print ('CALL FUNCTION, SE CHINGO PARENTESIS')
+    #print ('CALL FUNCTION, SE CHINGO PARENTESIS')
 
 
 #------PENDIENTE_CI------
 #<name function> ::= <official function> | <customer function>
 def name_function():
-    if (verificar('move') or verificar("turnleft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end")):
-        print ('obviamente entre a official fucntion')
+    if (verificar('move') or verificar("turnleft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end") or verificar("program")):
+        #print ('obviamente entre a official fucntion')
         next_token = all_tokens[-1]
         add_code_in_ci(next_token)
 
@@ -430,8 +435,11 @@ def name_function():
 def customer_function():
     global all_tokens
     next_token = all_tokens[-1]
-    add_symbol_to_table(next_token)
-    add_code_in_ci(next_token)
+    if (next_token in symbol_table):
+        add_code_in_ci(next_token)
+    else:
+        add_symbol_to_table(next_token)
+        add_code_in_ci(next_token)
     print('CUSTOMER FUNCTION TOKEN {}'.format(next_token))
     exigir_identifier()
 
@@ -446,6 +454,7 @@ def if_expression():
         if (exigir("(")):
             condition()
             add_code_in_ci("JMP")
+            #stack_positions.append(ci_count -1)
             stack_positions.append(ci_count)
             add_one_to_ci()
             if (exigir(")")):
@@ -456,6 +465,14 @@ def if_expression():
                         else_expression()
                     else:
                         mostrarError("}")
+                    actual_position = stack_positions.pop()
+                    #print(actual_position, 'poooooooop')
+                    ci_list[actual_position] = ci_count
+                    #add_code_in_ci("JMP")
+                    #print(actual_position, 'poooooooop')
+                    #ci_list[ci_count] = stack_positions.pop()
+                    #add_one_to_ci()
+                    print_ci()
                 else:
                     mostrarError("{")
             else:
@@ -511,10 +528,10 @@ def while_expression():
                     if (not exigir("}")):
                         mostrarError("}")
                     actual_position = stack_positions.pop()
-                    print(actual_position, 'poooooooop')
+                    #print(actual_position, 'poooooooop')
                     ci_list[actual_position] = ci_count + 2
                     add_code_in_ci("JMP")
-                    print(actual_position, 'poooooooop')
+                    #print(actual_position, 'poooooooop')
                     ci_list[ci_count] = stack_positions.pop()
                     add_one_to_ci()
                     print_ci()
@@ -528,8 +545,6 @@ def while_expression():
         mostrarError("while")
 
 
-#------PENDIENTE_CI------
-#<iterate expression> ::= "iterate" "(" <number> ")" "{" <body> "}"
 def iterate_expression():
     global ci_count
     global all_tokens
@@ -549,10 +564,10 @@ def iterate_expression():
                     if (not exigir("}")):
                         mostrarError("}")
                     actual_position = stack_positions.pop()
-                    print(actual_position, 'poooooooop')
+                    #print(actual_position, 'poooooooop')
                     ci_list[actual_position] = ci_count + 2
                     add_code_in_ci("JMP")
-                    print(actual_position, 'poooooooop')
+                    #print(actual_position, 'poooooooop')
                     ci_list[ci_count] = stack_positions.pop()
                     add_one_to_ci()
                     print_ci()
@@ -650,9 +665,9 @@ def condition():
 #------PENDIENTE_CI------
 #<official function> ::= "move" | "turnleft" | "pickBeeper" | "putBeeper" | "end"
 def official_function():
-    print ('official FUNCTIOOOOOOOOOOON')
+    #print ('official FUNCTIOOOOOOOOOOON')
     if (verificar("move")):
-        print('POP DE MOVEEEEEEEEEEEEEEEEEEEEEE')
+        #print('POP DE MOVEEEEEEEEEEEEEEEEEEEEEE')
         exigir("move")
     elif (verificar("turnleft")):
         exigir("turnleft")
