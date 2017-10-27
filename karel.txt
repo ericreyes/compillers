@@ -1,12 +1,10 @@
 class program {
   program() {
-    if ( front-is-clear ) {
+    if( front-is-clear ) {
       move()
       move()
     }
-    else {
-      turnleft()
-    }
+    turnleft()
     end()
   }
 }

@@ -449,7 +449,7 @@ def if_expression():
         if (exigir("(")):
             condition()
             add_code_in_ci("JMP")
-            #stack_positions.append(ci_count -1)
+            stack_positions.append(ci_count)
             stack_positions.append(ci_count)
             add_one_to_ci()
             if (exigir(")")):
@@ -460,6 +460,8 @@ def if_expression():
                         else_expression()
                     else:
                         mostrarError("}")
+                    actual_position = stack_positions.pop()
+                    ci_list[actual_position] = ci_count
                 else:
                     mostrarError("{")
             else:
