@@ -277,11 +277,8 @@ def add_symbol_to_table(symbol):
   global symbol_table
   global symbol_count
   symbol_count += 1
-  print(symbol_table)
-  print('ANTEEEEEESSSSSS')
   symbol_table.update({symbol: symbol_count})
-  print(symbol_table)
-  print('AGREGUE UNA FUNCION, BIEN VERGA')
+
 
 
 
@@ -422,7 +419,7 @@ def call_function():
 #------PENDIENTE_CI------
 #<name function> ::= <official function> | <customer function>
 def name_function():
-    if (verificar('move') or verificar("turnleft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end") or verificar("program")):
+    if (verificar('move') or verificar("turnleft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end")):
         #print ('obviamente entre a official fucntion')
         next_token = all_tokens[-1]
         add_code_in_ci(next_token)
@@ -435,11 +432,9 @@ def name_function():
 def customer_function():
     global all_tokens
     next_token = all_tokens[-1]
-    if (next_token in symbol_table):
-        add_code_in_ci(next_token)
-    else:
+    if (not next_token in symbol_table):
         add_symbol_to_table(next_token)
-        add_code_in_ci(next_token)
+    add_code_in_ci(next_token)
     print('CUSTOMER FUNCTION TOKEN {}'.format(next_token))
     exigir_identifier()
 
@@ -465,14 +460,6 @@ def if_expression():
                         else_expression()
                     else:
                         mostrarError("}")
-                    actual_position = stack_positions.pop()
-                    #print(actual_position, 'poooooooop')
-                    ci_list[actual_position] = ci_count
-                    #add_code_in_ci("JMP")
-                    #print(actual_position, 'poooooooop')
-                    #ci_list[ci_count] = stack_positions.pop()
-                    #add_one_to_ci()
-                    print_ci()
                 else:
                     mostrarError("{")
             else:
