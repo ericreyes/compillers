@@ -1,4 +1,5 @@
 import ply.lex as lex
+import pprint as pprint
 
 
 class OurLexer(object):
@@ -669,34 +670,46 @@ def official_function():
     else:
         mostrarError("a defined function")
 
-#------SIN TERMINAR------
-#<number> ::= numero natural del 1 al 100
-
-
 def number():
     exigir_numero()
 
+def check_lex_and_syntax():
+    karel_program = open('karel.txt').read()
+    lexer = OurLexer()
+    lexer.build()
 
-karel_program = open('karel.txt').read()
-lexer = OurLexer()
-lexer.build()
+    # lexer.test(karel_program)
+    global all_tokens
+    all_tokens = lexer.get_tokens(karel_program)
+    #token_types = lexer.get_tokens_types(karel_program)
+
+    # token_types.reverse()
+    all_tokens.reverse()
+    #print (all_tokens)
+
+    # Pa debuggear
+    #print (all_tokens)
+    #print (token_types)
+    program()
+
+def read_board_file(karel_file):
+    karel_matrix = [[0 for x in range(10)] for y in range(10)]
+    karel_tokens = open(karel_file).read().split()
+    karel_tokens.reverse()
+
+    for i, lista in enumerate(karel_matrix):
+        for j, element in enumerate(lista):
+            karel_matrix[i][j] = karel_tokens.pop()
+
+    pprint.pprint((karel_matrix))
+    return karel_matrix
 
 
-# lexer.test(karel_program)
+
+#check_lex_and_syntax()
+read_board_file('mapa.karel')
 
 
-all_tokens = lexer.get_tokens(karel_program)
-#token_types = lexer.get_tokens_types(karel_program)
-
-# token_types.reverse()
-all_tokens.reverse()
-#print (all_tokens)
 
 
-# Pa debuggear
-#print (all_tokens)
-#print (token_types)
-
-
-program()
 
