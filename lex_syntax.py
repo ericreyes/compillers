@@ -1,3 +1,14 @@
+'''
+Francisco Javier González López - A01228103
+Jesús Miguel Pérez Durán - A01228307
+
+Examen 2 Parcial - Compiladores
+Profesor: Jesús Ambriz
+
+Solo es correr el programa y tener un archivo llamado karel.txt con el codigo que va a correr
+'''
+
+
 import ply.lex as lex
 
 
@@ -148,6 +159,7 @@ class OurLexer(object):
       'putBeeper': 9003,
       'pickBeeper': 9004,
       'end': 9005,
+      'program': 9010,
       #conditionals
       'front-is-clear': 8001,
       'left-is-clear': 8002,
@@ -171,26 +183,9 @@ class OurLexer(object):
     }
     symbol_count = len(symbol_table) + 8999
 
-
-# karel_program = open('karel.txt').read()
-# lexer = OurLexer()
-# lexer.build()
-
-
-# #lexer.test(karel_program)
-
-
-# all_tokens = lexer.get_tokens(karel_program)
-# all_tokens.reverse()
-# print (all_tokens)
-
-# all_tokens2 = all_tokens
-
-
 def verificar(expected_token):
     global all_tokens
     next_token = all_tokens[-1]
-    #print ('VERIFICAR TIENE A {} EN LA MIRA'.format(next_token))
     return expected_token == next_token
 
 
@@ -201,7 +196,6 @@ counter = 0
 def verificar_identifier():
     global all_tokens
     next_token = all_tokens[-1]
-    #print ('VERIFICANDO IDENTIFIER::::::', next_token)
     return len(next_token) > 2 and len(next_token) < 11
 
 
@@ -210,11 +204,6 @@ def exigir_identifier():
     next_token = all_tokens[-1]
     if (verificar_identifier()):
         next_token = all_tokens.pop()
-        #print('popeeeoooooo el identifier: {}'.format(next_token))
-        # global counter
-        # counter = counter + 1
-        # print (counter, all_tokens)
-        # print ('')
     else:
         raise Exception('function has to have length between 2 and 11')
 
@@ -224,25 +213,20 @@ def exigir_numero():
     next_token = all_tokens[-1]
     if (verificar_numero()):
         next_token = all_tokens.pop()
-        #print('popeeeoooooo el NUMERO: {}'.format(next_token))
 
 
 def verificar_numero():
     global all_tokens
     next_token = all_tokens[-1]
-    #print ('VERIFICANDO NUMEROOOOO::::::', next_token)
     return int(next_token) >= 1 and int(next_token) <= 100
 
 
 def exigir(expected_token):
     global all_tokens
-    #print (all_tokens, 'antes del pop')
 
     next_token = all_tokens.pop()
     global counter
     counter = counter + 1
-    #print (counter, all_tokens)
-    #print ('')
     return expected_token == next_token
 
 def add_one_to_ci():
@@ -271,16 +255,14 @@ def print_ci():
       print(x,ci_list[x])
     print('#################')
 
-''' ESTO YA NO VALE MAS QUE PA PURA VERGA'''
+
 def add_symbol_to_table(symbol):
   global symbol_table
   global symbol_count
   symbol_count += 1
   print(symbol_table)
-  print('ANTEEEEEESSSSSS')
   symbol_table.update({symbol: symbol_count})
   print(symbol_table)
-  print('AGREGUE UNA FUNCION, BIEN VERGA')
 
 
 
@@ -290,14 +272,8 @@ def add_symbol_to_table(symbol):
 def mostrarError(expected_token):
     raise Exception('Syntax Error: Expected {}.'.format(expected_token))
 
-
-#------PENDIENTE_CI------
-#<program> ::= "class" "program" "{" <functions> <main function> "}"
 def program():
     if (exigir("class")):
-        add_code_in_ci("JMP")
-        stack_positions.append(ci_count)
-        print (stack_positions, "la tabla de posiciones")
         if (exigir("program")):
             if (exigir("{")):
                 functions()
@@ -312,32 +288,24 @@ def program():
         mostrarError("class")
 
 
-#------PENDIENTE_CI------
-#<functions> ::= <function> <functions prima> | lambda
 def functions():
     if (verificar("void")):
         function()
         functions_prima()
 
 
-#------PENDIENTE_CI------
-#<functions prima> ::= <function> <functions prima> | lambda
 def functions_prima():
     if (verificar("void")):
         function()
         functions_prima()
 
 
-#------PENDIENTE_CI------
-def main_function():   
+def main_function():
     if (exigir("program")):
+        add_code_in_ci("program")
         if (exigir("(")):
             if (exigir(")")):
                 if (exigir("{")):
-                    actual_position = stack_positions.pop()
-                    print(actual_position, 'poooooooop')
-                    ci_list[actual_position] = ci_count + 1
-                    add_one_to_ci() 
                     body()
                     if (not exigir("}")):
                         mostrarError("}")
@@ -351,15 +319,12 @@ def main_function():
         mostrarError("program")
 
 
-#------PENDIENTE_CI------
-#<function> ::= "void" <name function> "("    ")" "{" <body> "}"
 def function():
-    print ('CORRIENDO FUNCIOOOOOOOOOOOOOOOOOOOOOOOOON')
     if (exigir("void")):
-        name_function() #HERE
+
+        name_function()
         if (exigir("(")):
             if (exigir(")")):
-                print ('EXIJO BRACKETS EN FUNCTION')
                 if (exigir("{")):
                     body()
                     if (not exigir("}")):
@@ -374,28 +339,17 @@ def function():
     else:
         mostrarError("void")
 
-
-#------PENDIENTE_CI------
-#<body> ::= <expression> <body prima>
 def body():
     print ('expresssion llamada en body normalito')
     expression()
     body_prima()
 
-
-#------PENDIENTE_CI------
-#<body prima> ::= <expression> <body prima> | lambda
 def body_prima():
-    #print ('entra a body prima ')
 
     if (verificar("if") or verificar("while") or verificar("iterate") or verificar('move') or verificar("turnleft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end") or verificar_identifier()):
         expression()
         body_prima()
-    # else lambda
 
-
-#------PENDIENTE_CI------
-#<expression> ::= <call function> | <if expression> | <while expression> | <iterate expression>
 def expression():
     if (verificar("if")):
         if_expression()
@@ -407,27 +361,16 @@ def expression():
         call_function()
 
 
-
-#------PENDIENTE_CI------
-# verificar que no es palabra reservada
-# <call function> ::= <name function> "(" ")"
 def call_function():
     name_function()
-    #print ('exigiendo parentesis en call function')
-
     if (exigir("(")):
         if (not exigir(")")):
             mostrarError(")")
     else:
         mostrarError("(")
-    #print ('CALL FUNCTION, SE CHINGO PARENTESIS')
 
-
-#------PENDIENTE_CI------
-#<name function> ::= <official function> | <customer function>
 def name_function():
     if (verificar('move') or verificar("turnleft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end") or verificar("program")):
-        #print ('obviamente entre a official fucntion')
         next_token = all_tokens[-1]
         add_code_in_ci(next_token)
 
@@ -435,11 +378,7 @@ def name_function():
     else:
         customer_function()
 
-#------PENDIENTE_ARREGLAR------
-#------PENDIENTE_ARREGLAR------
-#------PENDIENTE_ARREGLAR------
-#------PENDIENTE_ARREGLAR------
-#------PENDIENTE_ARREGLAR------
+
 def customer_function():
     global all_tokens
     next_token = all_tokens[-1]
@@ -450,10 +389,6 @@ def customer_function():
         add_code_in_ci(next_token)
     print('CUSTOMER FUNCTION TOKEN {}'.format(next_token))
     exigir_identifier()
-
-#------PENDIENTE_CI------
-#<if expression> ::= "if" "(" <condition> ")" "{" <body>    "}" <else>
-
 
 def if_expression():
     global ci_count
@@ -468,18 +403,12 @@ def if_expression():
             if (exigir(")")):
                 if (exigir("{")):
                     body()
-
                     if (exigir("}")):
                         else_expression()
                     else:
                         mostrarError("}")
                     actual_position = stack_positions.pop()
-                    #print(actual_position, 'poooooooop')
                     ci_list[actual_position] = ci_count
-                    #add_code_in_ci("JMP")
-                    #print(actual_position, 'poooooooop')
-                    #ci_list[ci_count] = stack_positions.pop()
-                    #add_one_to_ci()
                     print_ci()
                 else:
                     mostrarError("{")
@@ -490,15 +419,11 @@ def if_expression():
     else:
         mostrarError("if")
 
-
-#------PENDIENTE_CI------
-#<else> ::= "else" "{" <body> "}"    | lambda
 def else_expression():
     if (verificar("else")):
         if (exigir("else")):
             add_code_in_ci("JMP")
             actual_position = stack_positions.pop()
-            print(actual_position, 'poooooooop')
             ci_list[actual_position] = ci_count + 1
 
             stack_positions.append(ci_count)
@@ -508,18 +433,13 @@ def else_expression():
                 if (not exigir("}")):
                     mostrarError("}")
                 actual_position = stack_positions.pop()
-                print(actual_position, 'poooooooop')
                 ci_list[actual_position] = ci_count
                 print_ci()
             else:
                 mostrarError("{")
         else:
             mostrarError("else")
-    # else Lambda
 
-
-#------PENDIENTE_CI------
-#<while> ::= "while" "(" <condition> ")" "{" <body> "}"
 def while_expression():
     global ci_count
     if (exigir("while")):
@@ -536,10 +456,8 @@ def while_expression():
                     if (not exigir("}")):
                         mostrarError("}")
                     actual_position = stack_positions.pop()
-                    print(actual_position, 'poooooooop')
                     ci_list[actual_position] = ci_count + 2
                     add_code_in_ci("JMP")
-                    print(actual_position, 'poooooooop22222')
                     ci_list[ci_count] = stack_positions.pop()
                     add_one_to_ci()
                     print_ci()
@@ -560,7 +478,6 @@ def iterate_expression():
         stack_positions.append(ci_count)
         add_code_in_ci("iterate")
         if (exigir("(")):
-            print(all_tokens[-1],'IMPRIMIR EL NUMERO 3')
             add_num_in_ci(all_tokens[-1])
             number()
             add_code_in_ci("JMP")
@@ -572,10 +489,8 @@ def iterate_expression():
                     if (not exigir("}")):
                         mostrarError("}")
                     actual_position = stack_positions.pop()
-                    #print(actual_position, 'poooooooop')
                     ci_list[actual_position] = ci_count + 2
                     add_code_in_ci("JMP")
-                    #print(actual_position, 'poooooooop')
                     ci_list[ci_count] = stack_positions.pop()
                     add_one_to_ci()
                     print_ci()
@@ -588,27 +503,6 @@ def iterate_expression():
     else:
         mostrarError("iterate")
 
-
-#------PENDIENTE_CI------
-#<condition> ::=
-    # "front-is-clear" |
-    # "left-is-clear" |
-    # "right-is-clear" |
-    # "front-is-blocked" |
-    # "left-is-blocked" |
-    # "right-is-blocked" |
-    # "next-to-a-beeper" |
-    # "not-next to a beeper" |
-    # "facing-north" |
-    # "facing-south" |
-    # "facing-east" |
-    # "facing-west" |
-    # "not-facing-north" |
-    # "not-facing-south" |
-    # "not-facing-east" |
-    # "not-facing-west" |
-    # "any-beepers-in-beeper-bag" |
-    # "no-beepers-in-beeper-bag"
 def condition():
     global all_tokens
     next_token = all_tokens[-1]
@@ -670,12 +564,8 @@ def condition():
         mostrarError("a defined condition")
     add_code_in_ci(next_token)
 
-#------PENDIENTE_CI------
-#<official function> ::= "move" | "turnleft" | "pickBeeper" | "putBeeper" | "end"
 def official_function():
-    #print ('official FUNCTIOOOOOOOOOOON')
     if (verificar("move")):
-        #print('POP DE MOVEEEEEEEEEEEEEEEEEEEEEE')
         exigir("move")
     elif (verificar("turnleft")):
         exigir("turnleft")
@@ -688,10 +578,6 @@ def official_function():
     else:
         mostrarError("a defined function")
 
-#------SIN TERMINAR------
-#<number> ::= numero natural del 1 al 100
-
-
 def number():
     exigir_numero()
 
@@ -700,22 +586,9 @@ karel_program = open('karel.txt').read()
 lexer = OurLexer()
 lexer.build()
 
-
-# lexer.test(karel_program)
-
-
 all_tokens = lexer.get_tokens(karel_program)
-#token_types = lexer.get_tokens_types(karel_program)
 
-# token_types.reverse()
 all_tokens.reverse()
-#print (all_tokens)
-
-
-# Pa debuggear
-#print (all_tokens)
-#print (token_types)
-
 
 program()
 

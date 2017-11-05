@@ -3,11 +3,6 @@ class program {
     move()
     if ( front-is-clear ) {
       move()
-      turnleft()
-    }
-    turnleft()
-    if ( left-is-clear){
-      move()
     }
     end()
   }
