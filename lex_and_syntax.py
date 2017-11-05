@@ -1,6 +1,6 @@
 import ply.lex as lex
 import pprint as pprint
-
+import PyQt4
 
 class OurLexer(object):
     # List of token names.     This is always required
