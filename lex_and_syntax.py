@@ -329,7 +329,7 @@ def functions_prima():
 
 
 #------PENDIENTE_CI------
-def main_function():   
+def main_function():
     if (exigir("program")):
         if (exigir("(")):
             if (exigir(")")):
@@ -337,7 +337,7 @@ def main_function():
                     actual_position = stack_positions.pop()
                     print(actual_position, 'poooooooop')
                     ci_list[actual_position] = ci_count + 1
-                    add_one_to_ci() 
+                    add_one_to_ci()
                     body()
                     if (not exigir("}")):
                         mostrarError("}")
@@ -441,7 +441,7 @@ def name_function():
 #------PENDIENTE_ARREGLAR------
 #------PENDIENTE_ARREGLAR------
 def customer_function():
-    global all_tokens
+    '''global all_tokens
     next_token = all_tokens[-1]
     if (next_token in symbol_table):
         add_code_in_ci(next_token)
@@ -449,7 +449,11 @@ def customer_function():
         add_symbol_to_table(next_token)
         add_code_in_ci(next_token)
     print('CUSTOMER FUNCTION TOKEN {}'.format(next_token))
-    exigir_identifier()
+    exigir_identifier()'''
+    global t_symbols
+    t_symbols = {}
+    next_token = all_tokens[-1]
+
 
 #------PENDIENTE_CI------
 #<if expression> ::= "if" "(" <condition> ")" "{" <body>    "}" <else>
