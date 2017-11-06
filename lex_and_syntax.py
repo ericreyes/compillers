@@ -709,7 +709,7 @@ def read_board_file(karel_file):
 #check_lex_and_syntax()
 read_board_file('mapa.karel')
 
-
+#source activate py35_qt4
 
 
 
