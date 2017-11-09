@@ -1063,6 +1063,7 @@ class Ui_MainWindow(object):
         self.execute_code.setFont(font)
         self.execute_code.setObjectName(_fromUtf8("execute_code"))
         self.gridLayout_7.addWidget(self.execute_code, 2, 0, 1, 1)
+        self.execute_code.clicked.connect(self.execute_code_from_board)
         self.label = QtGui.QLabel(self.gridLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(12)
@@ -1119,7 +1120,14 @@ class Ui_MainWindow(object):
     def set_whole_board(self):
         pass
     #switch ()?
-    def read_code_from_board(self):
+    def execute_code_from_board(self):
+        global ci_count
+        ci_count = 0
+        global ci_list
+        ci_list = []
+        for i in range(10000):
+            ci_list.append(0)
+
         karel_program = self.textEdit.toPlainText()
         check_lex_and_syntax(karel_program)
         return karel_program
@@ -1159,7 +1167,11 @@ if __name__ == "__main__":
 
     ui.setupUi(MainWindow)
     ui.set_squares_blank()
-    ui.read_code_from_board()
+
+
+
+
+
 
 
     MainWindow.show()
