@@ -1,12 +1,729 @@
-# -*- coding: utf-8 -*-
+import ply.lex as lex
+import pprint as pprint
+import PyQt4
 
-# Form implementation generated from reading ui file 'karel10x10.ui'
-#
-# Created by: PyQt4 UI code generator 4.11.4
-#
-# WARNING! All changes made in this file will be lost!
+class OurLexer(object):
+    # List of token names.     This is always required
+    global reserved
+    reserved = {
+        'void': 'VOID',
+        'class': 'CLASS',
+        'program': 'PROGRAM',
+        'end': 'END',
+        'if': 'IF',
+        'else': 'ELSE',
+        'while': 'WHILE',
+        'iterate': 'ITERATE',
+        'return': 'RETURN',
+        '||': 'OR',
+        '&&': 'AND',
+        '!': 'NOT',
+        'turnoff': 'TURNOFF',
+        'turnleft': 'TURNLEFT',
+        'move': 'MOVE',
+        'pickbeeper': 'PICKBEEPER',
+        'putbeeper': 'PUTBEEPER',
+        'front-is-clear': 'FRONTISCLEAR',
+        'left-is-clear': 'LEFTISCLEAR',
+        'right-is-clear': 'RIGHTISCLEAR',
+        'front-is-blocked': 'FRONTISBLOCKED',
+        'left-is-blocked': 'LEFTISBLOCKED',
+        'right-is-blocked': 'RGHTISBLOCKED',
+        'next-to-a-beeper': 'NEXTTOABEEPER',
+        'not-next-to-a-beeper': 'NOTNEXTTOABEEPER',
+        'facing-north': 'FACINGNORTH',
+        'facing-south': 'FACINGSOUTH',
+        'facing-east': 'FACINGEAST',
+        'facing-west': 'FACINGWEST',
+        'not-facing-north': 'NOTFACINGNORTH',
+        'not-facing-south': 'NOTFACINGSOUTH',
+        'not-facing-east': 'NOTFACINGEAST',
+        'not-facing-west': 'NOTFACINGWEST',
+        'any-beepers-in-beeper-bag': 'ANYBEEPERSINBEEPERBAG',
+        'no-beepers-in-beeper-bag': 'NOBEEPERSBAG'
+    }
 
-from PyQt4 import QtCore, QtGui
+    tokens = [
+        'LBRACKET',
+        'RBRACKET',
+        'LPAREN',
+        'RPAREN',
+        'IDENTIFIER',
+        'NUMBER'
+    ] + list(reserved.values())
+
+    # Regular expression rules for simple tokens
+
+    t_LBRACKET = r'{'
+    t_RBRACKET = r'}'
+    t_LPAREN = r'\('
+    t_RPAREN = r'\)'
+
+    def t_newline(self, t):
+        r'\n+'
+        t.lexer.lineno += len(t.value)
+
+    def t_ID(self, token):
+        r'[a-zA-Z_][-a-zA-Z_0-9]*'
+        global reserved
+        # Check for reserved words
+        token.type = reserved.get(token.value, 'IDENTIFIER')
+
+        return token
+
+    def t_NUMBER(self, t):
+        r'\d+'
+        t.value = int(t.value)
+        return t
+
+    # ignore tabs and spaces
+    t_ignore = ' \t'
+
+    def t_error(self, t):
+        print("Illegal character '%s'" % t.value[0])
+        t.lexer.skip(1)
+
+    # Build the lexer
+    def build(self, **kwargs):
+        self.lexer = lex.lex(module=self, **kwargs)
+
+    # Test it output
+    def test(self, data):
+        self.lexer.input(data)
+        while True:
+            tok = self.lexer.token()
+            if not tok:
+                break
+        print(tok.type, tok.value)
+
+    def get_tokens(self, data):
+        self.lexer.input(data)
+        token_values = []
+        while True:
+            token = self.lexer.token()
+            if not token:
+                break
+            token_values.append(token.value)
+        return token_values
+
+    def get_tokens_types(self, data):
+        self.lexer.input(data)
+        token_types = []
+        while True:
+            token = self.lexer.token()
+            if not token:
+                break
+            token_types.append(token.type)
+        return token_types
+
+# Declaracion e inicializacion de CODIGO INTERMEDIO
+    global stack_positions
+    stack_positions = []
+
+    global ci_list
+    ci_list = []
+    for i in range(10000):
+        ci_list.append(0)
+
+    # Counter para CODIGO INTERMEDIO
+    global ci_count
+    global symbol_count
+
+
+    ci_count = 0
+
+    # Constantes (numeros) para funciones [deben ir en TABLA DE SIMBOLOS, no?]
+
+    global symbol_table
+    symbol_table = {
+      # if iterate
+      'if': 510,
+      'while': 550,
+      'iterate': 520,
+      'JMP': 530,
+      'RET': 540,
+
+      #official functions
+      'move': 9001,
+      'turnleft': 9002,
+      'putBeeper': 9003,
+      'pickBeeper': 9004,
+      'end': 9005,
+      #conditionals
+      'front-is-clear': 8001,
+      'left-is-clear': 8002,
+      'right-is-clear': 8003,
+      'front-is-blocked': 8004,
+      'left-is-blocked': 8005,
+      'right-is-blocked': 8006,
+      'next-to-a-beeper': 8007,
+      'not-next-to-a-beeper': 8008,
+      'facing-north': 8009,
+      'facing-south': 8010,
+      'facing-east': 8011,
+      'facing-west': 8012,
+      'not-facing-north': 8013,
+      'not-facing-south': 8014,
+      'not-facing-east': 8015,
+      'not-facing-west': 8016,
+      'any-beepers-in-beeper-bag': 8017,
+      'no-beepers-in-beeper-bag': 8018,
+
+    }
+    symbol_count = len(symbol_table) + 8999
+
+
+# karel_program = open('karel.txt').read()
+# lexer = OurLexer()
+# lexer.build()
+
+
+# #lexer.test(karel_program)
+
+
+# all_tokens = lexer.get_tokens(karel_program)
+# all_tokens.reverse()
+# print (all_tokens)
+
+# all_tokens2 = all_tokens
+
+
+def verificar(expected_token):
+    global all_tokens
+    next_token = all_tokens[-1]
+    #print ('VERIFICAR TIENE A {} EN LA MIRA'.format(next_token))
+    return expected_token == next_token
+
+
+global counter
+counter = 0
+
+
+def verificar_identifier():
+    global all_tokens
+    next_token = all_tokens[-1]
+    #print ('VERIFICANDO IDENTIFIER::::::', next_token)
+    return len(next_token) > 2 and len(next_token) < 11
+
+
+def exigir_identifier():
+    global all_tokens
+    next_token = all_tokens[-1]
+    if (verificar_identifier()):
+        next_token = all_tokens.pop()
+        #print('popeeeoooooo el identifier: {}'.format(next_token))
+        # global counter
+        # counter = counter + 1
+        # print (counter, all_tokens)
+        # print ('')
+    else:
+        raise Exception('function has to have length between 2 and 11')
+
+
+def exigir_numero():
+    global all_tokens
+    next_token = all_tokens[-1]
+    if (verificar_numero()):
+        next_token = all_tokens.pop()
+        #print('popeeeoooooo el NUMERO: {}'.format(next_token))
+
+
+def verificar_numero():
+    global all_tokens
+    next_token = all_tokens[-1]
+    #print ('VERIFICANDO NUMEROOOOO::::::', next_token)
+    return int(next_token) >= 1 and int(next_token) <= 100
+
+
+def exigir(expected_token):
+    global all_tokens
+    #print (all_tokens, 'antes del pop')
+
+    next_token = all_tokens.pop()
+    global counter
+    counter = counter + 1
+    #print (counter, all_tokens)
+    #print ('')
+    return expected_token == next_token
+
+def add_one_to_ci():
+    global ci_count
+    ci_count += 1
+
+def add_num_in_ci(number):
+    global ci_count
+    ci_list[ci_count] = number
+    add_one_to_ci()
+
+
+def add_code_in_ci(word_to_find):
+    global ci_count
+    print('Setting {} in Codigo Intermedio'.format(word_to_find))
+    if(word_to_find in symbol_table):
+        ci_list[ci_count] = symbol_table[word_to_find]
+        print('{} is the code to insert in ci_list[{}]'.format(ci_list[ci_count], ci_count))
+        print('adding' , word_to_find, ci_count)
+        print_ci()
+    add_one_to_ci()
+
+def print_ci():
+    print('#################')
+    for x in range(0, 30):
+      print(x,ci_list[x])
+    print('#################')
+
+''' ESTO YA NO VALE MAS QUE PA PURA VERGA'''
+def add_symbol_to_table(symbol):
+  global symbol_table
+  global symbol_count
+  symbol_count += 1
+  symbol_table.update({symbol: symbol_count})
+
+
+
+
+#------------------------------------------------------------------------------------------------
+
+
+def mostrarError(expected_token):
+    raise Exception('Syntax Error: Expected {}.'.format(expected_token))
+
+
+#------PENDIENTE_CI------
+#<program> ::= "class" "program" "{" <functions> <main function> "}"
+def program():
+    if (exigir("class")):
+        add_code_in_ci("JMP")
+        stack_positions.append(ci_count)
+        print (stack_positions, "la tabla de posiciones")
+        if (exigir("program")):
+            if (exigir("{")):
+                functions()
+                main_function()
+                if (not exigir("}")):
+                    mostrarError("}")
+            else:
+                mostrarError("{")
+        else:
+            mostrarError("program")
+    else:
+        mostrarError("class")
+
+
+#------PENDIENTE_CI------
+#<functions> ::= <function> <functions prima> | lambda
+def functions():
+    if (verificar("void")):
+        function()
+        functions_prima()
+
+
+#------PENDIENTE_CI------
+#<functions prima> ::= <function> <functions prima> | lambda
+def functions_prima():
+    if (verificar("void")):
+        function()
+        functions_prima()
+
+
+#------PENDIENTE_CI------
+def main_function():
+    if (exigir("program")):
+        if (exigir("(")):
+            if (exigir(")")):
+                if (exigir("{")):
+                    actual_position = stack_positions.pop()
+                    print(actual_position, 'poooooooop')
+                    ci_list[actual_position] = ci_count + 1
+                    add_one_to_ci()
+                    body()
+                    if (not exigir("}")):
+                        mostrarError("}")
+                else:
+                    mostrarError("{")
+            else:
+                mostrarError(")")
+        else:
+            mostrarError("(")
+    else:
+        mostrarError("program")
+
+
+#------PENDIENTE_CI------
+#<function> ::= "void" <name function> "("    ")" "{" <body> "}"
+def function():
+    print ('CORRIENDO FUNCIOOOOOOOOOOOOOOOOOOOOOOOOON')
+    if (exigir("void")):
+        name_function() #HERE
+        if (exigir("(")):
+            if (exigir(")")):
+                print ('EXIJO BRACKETS EN FUNCTION')
+                if (exigir("{")):
+                    body()
+                    if (not exigir("}")):
+                        mostrarError("}")
+                        add_code_in_ci("RET")
+                else:
+                    mostrarError("{")
+            else:
+                mostrarError(")")
+        else:
+            mostrarError("(")
+    else:
+        mostrarError("void")
+
+
+#------PENDIENTE_CI------
+#<body> ::= <expression> <body prima>
+def body():
+    print ('expresssion llamada en body normalito')
+    expression()
+    body_prima()
+
+
+#------PENDIENTE_CI------
+#<body prima> ::= <expression> <body prima> | lambda
+def body_prima():
+    #print ('entra a body prima ')
+
+    if (verificar("if") or verificar("while") or verificar("iterate") or verificar('move') or verificar("turnleft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end") or verificar_identifier()):
+        expression()
+        body_prima()
+    # else lambda
+
+
+#------PENDIENTE_CI------
+#<expression> ::= <call function> | <if expression> | <while expression> | <iterate expression>
+def expression():
+    if (verificar("if")):
+        if_expression()
+    elif (verificar("while")):
+        while_expression()
+    elif (verificar("iterate")):
+        iterate_expression()
+    else:
+        call_function()
+
+
+
+#------PENDIENTE_CI------
+# verificar que no es palabra reservada
+# <call function> ::= <name function> "(" ")"
+def call_function():
+    name_function()
+    #print ('exigiendo parentesis en call function')
+
+    if (exigir("(")):
+        if (not exigir(")")):
+            mostrarError(")")
+    else:
+        mostrarError("(")
+    #print ('CALL FUNCTION, SE CHINGO PARENTESIS')
+
+
+#------PENDIENTE_CI------
+#<name function> ::= <official function> | <customer function>
+def name_function():
+    if (verificar('move') or verificar("turnleft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end")):
+        #print ('obviamente entre a official fucntion')
+        next_token = all_tokens[-1]
+        add_code_in_ci(next_token)
+
+        official_function()
+    else:
+        customer_function()
+
+#------PENDIENTE_ARREGLAR------
+#------PENDIENTE_ARREGLAR------
+#------PENDIENTE_ARREGLAR------
+#------PENDIENTE_ARREGLAR------
+#------PENDIENTE_ARREGLAR------
+def customer_function():
+    '''global all_tokens
+    next_token = all_tokens[-1]
+    if (not next_token in symbol_table):
+        add_symbol_to_table(next_token)
+    add_code_in_ci(next_token)
+    print('CUSTOMER FUNCTION TOKEN {}'.format(next_token))
+    exigir_identifier()'''
+    global t_symbols
+    t_symbols = {}
+    next_token = all_tokens[-1]
+
+
+#------PENDIENTE_CI------
+#<if expression> ::= "if" "(" <condition> ")" "{" <body>    "}" <else>
+
+
+def if_expression():
+    global ci_count
+    if (exigir("if")):
+        add_code_in_ci("if")
+        if (exigir("(")):
+            condition()
+            add_code_in_ci("JMP")
+            stack_positions.append(ci_count)
+            stack_positions.append(ci_count)
+            add_one_to_ci()
+            if (exigir(")")):
+                if (exigir("{")):
+                    body()
+
+                    if (exigir("}")):
+                        else_expression()
+                    else:
+                        mostrarError("}")
+                    actual_position = stack_positions.pop()
+                    ci_list[actual_position] = ci_count
+                else:
+                    mostrarError("{")
+            else:
+                mostrarError(")")
+        else:
+            mostrarError("(")
+    else:
+        mostrarError("if")
+
+
+#------PENDIENTE_CI------
+#<else> ::= "else" "{" <body> "}"    | lambda
+def else_expression():
+    if (verificar("else")):
+        if (exigir("else")):
+            add_code_in_ci("JMP")
+            actual_position = stack_positions.pop()
+            print(actual_position, 'poooooooop')
+            ci_list[actual_position] = ci_count + 1
+
+            stack_positions.append(ci_count)
+            add_one_to_ci()
+            if (exigir("{")):
+                body()
+                if (not exigir("}")):
+                    mostrarError("}")
+                actual_position = stack_positions.pop()
+                print(actual_position, 'poooooooop')
+                ci_list[actual_position] = ci_count
+                print_ci()
+            else:
+                mostrarError("{")
+        else:
+            mostrarError("else")
+    # else Lambda
+
+
+#------PENDIENTE_CI------
+#<while> ::= "while" "(" <condition> ")" "{" <body> "}"
+def while_expression():
+    global ci_count
+    if (exigir("while")):
+        stack_positions.append(ci_count)
+        add_code_in_ci("while")
+        if (exigir("(")):
+            condition()
+            add_code_in_ci("JMP")
+            stack_positions.append(ci_count)
+            add_one_to_ci()
+            if (exigir(")")):
+                if (exigir("{")):
+                    body()
+                    if (not exigir("}")):
+                        mostrarError("}")
+                    actual_position = stack_positions.pop()
+                    print(actual_position, 'poooooooop')
+                    ci_list[actual_position] = ci_count + 2
+                    add_code_in_ci("JMP")
+                    print(actual_position, 'poooooooop22222')
+                    ci_list[ci_count] = stack_positions.pop()
+                    add_one_to_ci()
+                    print_ci()
+                else:
+                    mostrarError("{")
+            else:
+                mostrarError(")")
+        else:
+            mostrarError("(")
+    else:
+        mostrarError("while")
+
+
+def iterate_expression():
+    global ci_count
+    global all_tokens
+    if (exigir("iterate")):
+        stack_positions.append(ci_count)
+        add_code_in_ci("iterate")
+        if (exigir("(")):
+            print(all_tokens[-1],'IMPRIMIR EL NUMERO 3')
+            add_num_in_ci(all_tokens[-1])
+            number()
+            add_code_in_ci("JMP")
+            stack_positions.append(ci_count)
+            add_one_to_ci()
+            if (exigir(")")):
+                if (exigir("{")):
+                    body()
+                    if (not exigir("}")):
+                        mostrarError("}")
+                    actual_position = stack_positions.pop()
+                    #print(actual_position, 'poooooooop')
+                    ci_list[actual_position] = ci_count + 2
+                    add_code_in_ci("JMP")
+                    #print(actual_position, 'poooooooop')
+                    ci_list[ci_count] = stack_positions.pop()
+                    add_one_to_ci()
+                    print_ci()
+                else:
+                    mostrarError("{")
+            else:
+                mostrarError(")")
+        else:
+            mostrarError("(")
+    else:
+        mostrarError("iterate")
+
+
+#------PENDIENTE_CI------
+#<condition> ::=
+    # "front-is-clear" |
+    # "left-is-clear" |
+    # "right-is-clear" |
+    # "front-is-blocked" |
+    # "left-is-blocked" |
+    # "right-is-blocked" |
+    # "next-to-a-beeper" |
+    # "not-next to a beeper" |
+    # "facing-north" |
+    # "facing-south" |
+    # "facing-east" |
+    # "facing-west" |
+    # "not-facing-north" |
+    # "not-facing-south" |
+    # "not-facing-east" |
+    # "not-facing-west" |
+    # "any-beepers-in-beeper-bag" |
+    # "no-beepers-in-beeper-bag"
+def condition():
+    global all_tokens
+    next_token = all_tokens[-1]
+
+    if (verificar("front-is-clear")):
+        exigir("front-is-clear")
+
+    elif (verificar("left-is-clear")):
+        exigir("left-is-clear")
+
+    elif (verificar("right-is-clear")):
+        exigir("right-is-clear")
+
+    elif (verificar("front-is-blocked")):
+        exigir("front-is-blocked")
+
+    elif (verificar("left-is-blocked")):
+        exigir("left-is-blocked")
+
+    elif (verificar("right-is-blocked")):
+        exigir("right-is-blocked")
+
+    elif (verificar("next-to-a-beeper")):
+        exigir("next-to-a-beeper")
+
+    elif (verificar("not-next-to-a-beeper")):
+        exigir("not-next-to-a-beeper")
+
+    elif (verificar("facing-north")):
+        exigir("facing-north")
+
+    elif (verificar("facing-south")):
+        exigir("facing-south")
+
+    elif (verificar("facing-east")):
+        exigir("facing-east")
+
+    elif (verificar("facing-west")):
+        exigir("facing-west")
+
+    elif (verificar("not-facing-north")):
+        exigir("not-facing-north")
+
+    elif (verificar("not-facing-south")):
+        exigir("not-facing-south")
+
+    elif (verificar("not-facing-east")):
+        exigir("not-facing-east")
+
+    elif (verificar("not-facing-west")):
+        exigir("not-facing-west")
+
+    elif (verificar("any-beepers-in-beeper-bag")):
+        exigir("any-beepers-in-beeper-bag")
+
+    elif (verificar("no-beepers-in-beeper-bag")):
+        exigir("no-beepers-in-beeper-bag")
+    else:
+        mostrarError("a defined condition")
+    add_code_in_ci(next_token)
+
+#------PENDIENTE_CI------
+#<official function> ::= "move" | "turnleft" | "pickBeeper" | "putBeeper" | "end"
+def official_function():
+    #print ('official FUNCTIOOOOOOOOOOON')
+    if (verificar("move")):
+        #print('POP DE MOVEEEEEEEEEEEEEEEEEEEEEE')
+        exigir("move")
+    elif (verificar("turnleft")):
+        exigir("turnleft")
+    elif (verificar("pickBeeper")):
+        exigir("pickBeeper")
+    elif (verificar("putBeeper")):
+        exigir("putBeeper")
+    elif (verificar("end")):
+        exigir("end")
+    else:
+        mostrarError("a defined function")
+
+def number():
+    exigir_numero()
+
+
+def check_lex_and_syntax(karel_program):
+    #karel_program = open('karel.txt').read()
+    lexer = OurLexer()
+    lexer.build()
+
+    # lexer.test(karel_program)
+    global all_tokens
+    all_tokens = lexer.get_tokens(karel_program)
+    #token_types = lexer.get_tokens_types(karel_program)
+
+    # token_types.reverse()
+    all_tokens.reverse()
+    #print (all_tokens)
+
+    # Pa debuggear
+    #print (all_tokens)
+    #print (token_types)
+    program()
+
+def read_board_file(karel_file):
+    karel_matrix = [[0 for x in range(10)] for y in range(10)]
+    karel_tokens = open(karel_file).read().split()
+    karel_tokens.reverse()
+
+    for i, lista in enumerate(karel_matrix):
+        for j, element in enumerate(lista):
+            karel_matrix[i][j] = karel_tokens.pop()
+
+    # Use pretty print to print the matrix in console
+    #pprint.pprint((karel_matrix))
+    return karel_matrix
+
+
+
+#check_lex_and_syntax()
+karel_map_matrix = read_board_file('mapa.karel')
+
+
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -35,311 +752,311 @@ class Ui_MainWindow(object):
         self.gridLayout_7.setObjectName(_fromUtf8("gridLayout_7"))
         self.gridLayout_5 = QtGui.QGridLayout()
         self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))
-        self.pushButton_31 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_31.setObjectName(_fromUtf8("pushButton_31"))
-        self.gridLayout_5.addWidget(self.pushButton_31, 0, 3, 1, 1)
-        self.pushButton_21 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_21.setObjectName(_fromUtf8("pushButton_21"))
-        self.gridLayout_5.addWidget(self.pushButton_21, 2, 1, 1, 1)
-        self.pushButton_22 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_22.setObjectName(_fromUtf8("pushButton_22"))
-        self.gridLayout_5.addWidget(self.pushButton_22, 0, 1, 1, 1)
-        self.pushButton_25 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_25.setObjectName(_fromUtf8("pushButton_25"))
-        self.gridLayout_5.addWidget(self.pushButton_25, 3, 1, 1, 1)
-        self.pushButton_23 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_23.setObjectName(_fromUtf8("pushButton_23"))
-        self.gridLayout_5.addWidget(self.pushButton_23, 2, 3, 1, 1)
-        self.pushButton_26 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_26.setObjectName(_fromUtf8("pushButton_26"))
-        self.gridLayout_5.addWidget(self.pushButton_26, 0, 0, 1, 1)
-        self.pushButton_24 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_24.setObjectName(_fromUtf8("pushButton_24"))
-        self.gridLayout_5.addWidget(self.pushButton_24, 0, 2, 1, 1)
-        self.pushButton_27 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_27.setObjectName(_fromUtf8("pushButton_27"))
-        self.gridLayout_5.addWidget(self.pushButton_27, 1, 0, 1, 1)
-        self.pushButton_30 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_30.setObjectName(_fromUtf8("pushButton_30"))
-        self.gridLayout_5.addWidget(self.pushButton_30, 4, 2, 1, 1)
-        self.pushButton_28 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_28.setObjectName(_fromUtf8("pushButton_28"))
-        self.gridLayout_5.addWidget(self.pushButton_28, 3, 0, 1, 1)
-        self.pushButton_29 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_29.setObjectName(_fromUtf8("pushButton_29"))
-        self.gridLayout_5.addWidget(self.pushButton_29, 2, 0, 1, 1)
-        self.pushButton_34 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_34.setObjectName(_fromUtf8("pushButton_34"))
-        self.gridLayout_5.addWidget(self.pushButton_34, 3, 2, 1, 1)
-        self.pushButton_32 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_32.setObjectName(_fromUtf8("pushButton_32"))
-        self.gridLayout_5.addWidget(self.pushButton_32, 1, 3, 1, 1)
-        self.pushButton_33 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_33.setObjectName(_fromUtf8("pushButton_33"))
-        self.gridLayout_5.addWidget(self.pushButton_33, 2, 2, 1, 1)
-        self.pushButton_35 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_35.setObjectName(_fromUtf8("pushButton_35"))
-        self.gridLayout_5.addWidget(self.pushButton_35, 3, 3, 1, 1)
-        self.pushButton_37 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_37.setObjectName(_fromUtf8("pushButton_37"))
-        self.gridLayout_5.addWidget(self.pushButton_37, 1, 2, 1, 1)
-        self.pushButton_38 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_38.setObjectName(_fromUtf8("pushButton_38"))
-        self.gridLayout_5.addWidget(self.pushButton_38, 1, 1, 1, 1)
-        self.pushButton_36 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_36.setObjectName(_fromUtf8("pushButton_36"))
-        self.gridLayout_5.addWidget(self.pushButton_36, 4, 1, 1, 1)
-        self.pushButton_39 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_39.setObjectName(_fromUtf8("pushButton_39"))
-        self.gridLayout_5.addWidget(self.pushButton_39, 4, 0, 1, 1)
-        self.pushButton_40 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_40.setObjectName(_fromUtf8("pushButton_40"))
-        self.gridLayout_5.addWidget(self.pushButton_40, 4, 3, 1, 1)
-        self.pushButton_130 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_130.setObjectName(_fromUtf8("pushButton_130"))
-        self.gridLayout_5.addWidget(self.pushButton_130, 5, 1, 1, 1)
-        self.pushButton_77 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_77.setObjectName(_fromUtf8("pushButton_77"))
-        self.gridLayout_5.addWidget(self.pushButton_77, 5, 7, 1, 1)
-        self.pushButton_76 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_76.setObjectName(_fromUtf8("pushButton_76"))
-        self.gridLayout_5.addWidget(self.pushButton_76, 5, 8, 1, 1)
-        self.pushButton_127 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_127.setObjectName(_fromUtf8("pushButton_127"))
-        self.gridLayout_5.addWidget(self.pushButton_127, 5, 5, 1, 1)
-        self.pushButton_79 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_79.setObjectName(_fromUtf8("pushButton_79"))
-        self.gridLayout_5.addWidget(self.pushButton_79, 5, 6, 1, 1)
-        self.pushButton_129 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_129.setObjectName(_fromUtf8("pushButton_129"))
-        self.gridLayout_5.addWidget(self.pushButton_129, 5, 9, 1, 1)
-        self.pushButton_78 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_78.setObjectName(_fromUtf8("pushButton_78"))
-        self.gridLayout_5.addWidget(self.pushButton_78, 5, 2, 1, 1)
-        self.pushButton_128 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_128.setObjectName(_fromUtf8("pushButton_128"))
-        self.gridLayout_5.addWidget(self.pushButton_128, 5, 3, 1, 1)
-        self.pushButton_126 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_126.setObjectName(_fromUtf8("pushButton_126"))
-        self.gridLayout_5.addWidget(self.pushButton_126, 5, 4, 1, 1)
-        self.pushButton_132 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_132.setObjectName(_fromUtf8("pushButton_132"))
-        self.gridLayout_5.addWidget(self.pushButton_132, 6, 7, 1, 1)
-        self.pushButton_133 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_133.setObjectName(_fromUtf8("pushButton_133"))
-        self.gridLayout_5.addWidget(self.pushButton_133, 6, 3, 1, 1)
-        self.pushButton_135 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_135.setObjectName(_fromUtf8("pushButton_135"))
-        self.gridLayout_5.addWidget(self.pushButton_135, 6, 4, 1, 1)
-        self.pushButton_131 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_131.setObjectName(_fromUtf8("pushButton_131"))
-        self.gridLayout_5.addWidget(self.pushButton_131, 6, 5, 1, 1)
-        self.pushButton_138 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_138.setObjectName(_fromUtf8("pushButton_138"))
-        self.gridLayout_5.addWidget(self.pushButton_138, 6, 6, 1, 1)
-        self.pushButton_136 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_136.setObjectName(_fromUtf8("pushButton_136"))
-        self.gridLayout_5.addWidget(self.pushButton_136, 6, 8, 1, 1)
-        self.pushButton_137 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_137.setObjectName(_fromUtf8("pushButton_137"))
-        self.gridLayout_5.addWidget(self.pushButton_137, 6, 9, 1, 1)
-        self.pushButton_61 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_61.setObjectName(_fromUtf8("pushButton_61"))
-        self.gridLayout_5.addWidget(self.pushButton_61, 3, 5, 1, 1)
-        self.pushButton_56 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_56.setObjectName(_fromUtf8("pushButton_56"))
-        self.gridLayout_5.addWidget(self.pushButton_56, 2, 5, 1, 1)
-        self.pushButton_66 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_66.setObjectName(_fromUtf8("pushButton_66"))
-        self.gridLayout_5.addWidget(self.pushButton_66, 4, 5, 1, 1)
-        self.pushButton_51 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_51.setObjectName(_fromUtf8("pushButton_51"))
-        self.gridLayout_5.addWidget(self.pushButton_51, 1, 5, 1, 1)
-        self.pushButton_143 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_143.setObjectName(_fromUtf8("pushButton_143"))
-        self.gridLayout_5.addWidget(self.pushButton_143, 7, 5, 1, 1)
-        self.pushButton_144 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_144.setObjectName(_fromUtf8("pushButton_144"))
-        self.gridLayout_5.addWidget(self.pushButton_144, 7, 4, 1, 1)
-        self.pushButton_146 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_146.setObjectName(_fromUtf8("pushButton_146"))
-        self.gridLayout_5.addWidget(self.pushButton_146, 7, 2, 1, 1)
-        self.pushButton_148 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_148.setObjectName(_fromUtf8("pushButton_148"))
-        self.gridLayout_5.addWidget(self.pushButton_148, 7, 1, 1, 1)
-        self.pushButton_147 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_147.setObjectName(_fromUtf8("pushButton_147"))
-        self.gridLayout_5.addWidget(self.pushButton_147, 7, 3, 1, 1)
-        self.pushButton_140 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_140.setObjectName(_fromUtf8("pushButton_140"))
-        self.gridLayout_5.addWidget(self.pushButton_140, 7, 7, 1, 1)
-        self.pushButton_71 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_71.setObjectName(_fromUtf8("pushButton_71"))
-        self.gridLayout_5.addWidget(self.pushButton_71, 7, 0, 1, 1)
-        self.pushButton_75 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_75.setObjectName(_fromUtf8("pushButton_75"))
-        self.gridLayout_5.addWidget(self.pushButton_75, 9, 0, 1, 1)
-        self.pushButton_72 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_72.setObjectName(_fromUtf8("pushButton_72"))
-        self.gridLayout_5.addWidget(self.pushButton_72, 8, 0, 1, 1)
-        self.pushButton_145 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_145.setObjectName(_fromUtf8("pushButton_145"))
-        self.gridLayout_5.addWidget(self.pushButton_145, 7, 6, 1, 1)
-        self.pushButton_74 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_74.setObjectName(_fromUtf8("pushButton_74"))
-        self.gridLayout_5.addWidget(self.pushButton_74, 5, 0, 1, 1)
-        self.pushButton_73 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_73.setObjectName(_fromUtf8("pushButton_73"))
-        self.gridLayout_5.addWidget(self.pushButton_73, 6, 0, 1, 1)
-        self.pushButton_141 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_141.setObjectName(_fromUtf8("pushButton_141"))
-        self.gridLayout_5.addWidget(self.pushButton_141, 7, 8, 1, 1)
-        self.pushButton_142 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_142.setObjectName(_fromUtf8("pushButton_142"))
-        self.gridLayout_5.addWidget(self.pushButton_142, 7, 9, 1, 1)
-        self.pushButton_42 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_42.setObjectName(_fromUtf8("pushButton_42"))
-        self.gridLayout_5.addWidget(self.pushButton_42, 0, 5, 1, 1)
-        self.pushButton_54 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_54.setObjectName(_fromUtf8("pushButton_54"))
-        self.gridLayout_5.addWidget(self.pushButton_54, 2, 8, 1, 1)
-        self.pushButton_49 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_49.setObjectName(_fromUtf8("pushButton_49"))
-        self.gridLayout_5.addWidget(self.pushButton_49, 1, 6, 1, 1)
-        self.pushButton_55 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_55.setObjectName(_fromUtf8("pushButton_55"))
-        self.gridLayout_5.addWidget(self.pushButton_55, 2, 6, 1, 1)
-        self.pushButton_48 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_48.setObjectName(_fromUtf8("pushButton_48"))
-        self.gridLayout_5.addWidget(self.pushButton_48, 1, 7, 1, 1)
-        self.pushButton_45 = QtGui.QPushButton(self.gridLayoutWidget)
+        self.pos03 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos03.setObjectName(_fromUtf8("pos03"))
+        self.gridLayout_5.addWidget(self.pos03, 0, 3, 1, 1)
+        self.pos21 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos21.setObjectName(_fromUtf8("pos21"))
+        self.gridLayout_5.addWidget(self.pos21, 2, 1, 1, 1)
+        self.pos01 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos01.setObjectName(_fromUtf8("pos01"))
+        self.gridLayout_5.addWidget(self.pos01, 0, 1, 1, 1)
+        self.pos31 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos31.setObjectName(_fromUtf8("pos31"))
+        self.gridLayout_5.addWidget(self.pos31, 3, 1, 1, 1)
+        self.pos23 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos23.setObjectName(_fromUtf8("pos23"))
+        self.gridLayout_5.addWidget(self.pos23, 2, 3, 1, 1)
+        self.pos00 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos00.setObjectName(_fromUtf8("pos00"))
+        self.gridLayout_5.addWidget(self.pos00, 0, 0, 1, 1)
+        self.pos02 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos02.setObjectName(_fromUtf8("pos02"))
+        self.gridLayout_5.addWidget(self.pos02, 0, 2, 1, 1)
+        self.pos10 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos10.setObjectName(_fromUtf8("pos10"))
+        self.gridLayout_5.addWidget(self.pos10, 1, 0, 1, 1)
+        self.pos42 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos42.setObjectName(_fromUtf8("pos42"))
+        self.gridLayout_5.addWidget(self.pos42, 4, 2, 1, 1)
+        self.pos30 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos30.setObjectName(_fromUtf8("pos30"))
+        self.gridLayout_5.addWidget(self.pos30, 3, 0, 1, 1)
+        self.pos20 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos20.setObjectName(_fromUtf8("pos20"))
+        self.gridLayout_5.addWidget(self.pos20, 2, 0, 1, 1)
+        self.pos32 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos32.setObjectName(_fromUtf8("pos32"))
+        self.gridLayout_5.addWidget(self.pos32, 3, 2, 1, 1)
+        self.pos13 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos13.setObjectName(_fromUtf8("pos13"))
+        self.gridLayout_5.addWidget(self.pos13, 1, 3, 1, 1)
+        self.pos22 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos22.setObjectName(_fromUtf8("pos22"))
+        self.gridLayout_5.addWidget(self.pos22, 2, 2, 1, 1)
+        self.pos33 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos33.setObjectName(_fromUtf8("pos33"))
+        self.gridLayout_5.addWidget(self.pos33, 3, 3, 1, 1)
+        self.pos12 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos12.setObjectName(_fromUtf8("pos12"))
+        self.gridLayout_5.addWidget(self.pos12, 1, 2, 1, 1)
+        self.pos11 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos11.setObjectName(_fromUtf8("pos11"))
+        self.gridLayout_5.addWidget(self.pos11, 1, 1, 1, 1)
+        self.pos41 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos41.setObjectName(_fromUtf8("pos41"))
+        self.gridLayout_5.addWidget(self.pos41, 4, 1, 1, 1)
+        self.pos40 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos40.setObjectName(_fromUtf8("pos40"))
+        self.gridLayout_5.addWidget(self.pos40, 4, 0, 1, 1)
+        self.pos43 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos43.setObjectName(_fromUtf8("pos43"))
+        self.gridLayout_5.addWidget(self.pos43, 4, 3, 1, 1)
+        self.pos51 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos51.setObjectName(_fromUtf8("pos51"))
+        self.gridLayout_5.addWidget(self.pos51, 5, 1, 1, 1)
+        self.pos57 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos57.setObjectName(_fromUtf8("pos57"))
+        self.gridLayout_5.addWidget(self.pos57, 5, 7, 1, 1)
+        self.pos58 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos58.setObjectName(_fromUtf8("pos58"))
+        self.gridLayout_5.addWidget(self.pos58, 5, 8, 1, 1)
+        self.pos55 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos55.setObjectName(_fromUtf8("pos55"))
+        self.gridLayout_5.addWidget(self.pos55, 5, 5, 1, 1)
+        self.pos56 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos56.setObjectName(_fromUtf8("pos56"))
+        self.gridLayout_5.addWidget(self.pos56, 5, 6, 1, 1)
+        self.pos59 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos59.setObjectName(_fromUtf8("pos59"))
+        self.gridLayout_5.addWidget(self.pos59, 5, 9, 1, 1)
+        self.pos52 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos52.setObjectName(_fromUtf8("pos52"))
+        self.gridLayout_5.addWidget(self.pos52, 5, 2, 1, 1)
+        self.pos53 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos53.setObjectName(_fromUtf8("pos53"))
+        self.gridLayout_5.addWidget(self.pos53, 5, 3, 1, 1)
+        self.pos54 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos54.setObjectName(_fromUtf8("pos54"))
+        self.gridLayout_5.addWidget(self.pos54, 5, 4, 1, 1)
+        self.pos67 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos67.setObjectName(_fromUtf8("pos67"))
+        self.gridLayout_5.addWidget(self.pos67, 6, 7, 1, 1)
+        self.pos63 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos63.setObjectName(_fromUtf8("pos63"))
+        self.gridLayout_5.addWidget(self.pos63, 6, 3, 1, 1)
+        self.pos64 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos64.setObjectName(_fromUtf8("pos64"))
+        self.gridLayout_5.addWidget(self.pos64, 6, 4, 1, 1)
+        self.pos65 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos65.setObjectName(_fromUtf8("pos65"))
+        self.gridLayout_5.addWidget(self.pos65, 6, 5, 1, 1)
+        self.pos66 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos66.setObjectName(_fromUtf8("pos66"))
+        self.gridLayout_5.addWidget(self.pos66, 6, 6, 1, 1)
+        self.pos68 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos68.setObjectName(_fromUtf8("pos68"))
+        self.gridLayout_5.addWidget(self.pos68, 6, 8, 1, 1)
+        self.pos69 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos69.setObjectName(_fromUtf8("pos69"))
+        self.gridLayout_5.addWidget(self.pos69, 6, 9, 1, 1)
+        self.pos35 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos35.setObjectName(_fromUtf8("pos35"))
+        self.gridLayout_5.addWidget(self.pos35, 3, 5, 1, 1)
+        self.pos25 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos25.setObjectName(_fromUtf8("pos25"))
+        self.gridLayout_5.addWidget(self.pos25, 2, 5, 1, 1)
+        self.pos45 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos45.setObjectName(_fromUtf8("pos45"))
+        self.gridLayout_5.addWidget(self.pos45, 4, 5, 1, 1)
+        self.pos15 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos15.setObjectName(_fromUtf8("pos15"))
+        self.gridLayout_5.addWidget(self.pos15, 1, 5, 1, 1)
+        self.pos75 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos75.setObjectName(_fromUtf8("pos75"))
+        self.gridLayout_5.addWidget(self.pos75, 7, 5, 1, 1)
+        self.pos74 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos74.setObjectName(_fromUtf8("pos74"))
+        self.gridLayout_5.addWidget(self.pos74, 7, 4, 1, 1)
+        self.pos72 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos72.setObjectName(_fromUtf8("pos72"))
+        self.gridLayout_5.addWidget(self.pos72, 7, 2, 1, 1)
+        self.pos71 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos71.setObjectName(_fromUtf8("pos71"))
+        self.gridLayout_5.addWidget(self.pos71, 7, 1, 1, 1)
+        self.pos73 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos73.setObjectName(_fromUtf8("pos73"))
+        self.gridLayout_5.addWidget(self.pos73, 7, 3, 1, 1)
+        self.pos77 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos77.setObjectName(_fromUtf8("pos77"))
+        self.gridLayout_5.addWidget(self.pos77, 7, 7, 1, 1)
+        self.pos70 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos70.setObjectName(_fromUtf8("pos70"))
+        self.gridLayout_5.addWidget(self.pos70, 7, 0, 1, 1)
+        self.pos90 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos90.setObjectName(_fromUtf8("pos90"))
+        self.gridLayout_5.addWidget(self.pos90, 9, 0, 1, 1)
+        self.pos80 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos80.setObjectName(_fromUtf8("pos80"))
+        self.gridLayout_5.addWidget(self.pos80, 8, 0, 1, 1)
+        self.pos76 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos76.setObjectName(_fromUtf8("pos76"))
+        self.gridLayout_5.addWidget(self.pos76, 7, 6, 1, 1)
+        self.pos50 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos50.setObjectName(_fromUtf8("pos50"))
+        self.gridLayout_5.addWidget(self.pos50, 5, 0, 1, 1)
+        self.pos60 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos60.setObjectName(_fromUtf8("pos60"))
+        self.gridLayout_5.addWidget(self.pos60, 6, 0, 1, 1)
+        self.pos78 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos78.setObjectName(_fromUtf8("pos78"))
+        self.gridLayout_5.addWidget(self.pos78, 7, 8, 1, 1)
+        self.pos79 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos79.setObjectName(_fromUtf8("pos79"))
+        self.gridLayout_5.addWidget(self.pos79, 7, 9, 1, 1)
+        self.pos05 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos05.setObjectName(_fromUtf8("pos05"))
+        self.gridLayout_5.addWidget(self.pos05, 0, 5, 1, 1)
+        self.pos28 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos28.setObjectName(_fromUtf8("pos28"))
+        self.gridLayout_5.addWidget(self.pos28, 2, 8, 1, 1)
+        self.pos16 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos16.setObjectName(_fromUtf8("pos16"))
+        self.gridLayout_5.addWidget(self.pos16, 1, 6, 1, 1)
+        self.pos26 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos26.setObjectName(_fromUtf8("pos26"))
+        self.gridLayout_5.addWidget(self.pos26, 2, 6, 1, 1)
+        self.pos17 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos17.setObjectName(_fromUtf8("pos17"))
+        self.gridLayout_5.addWidget(self.pos17, 1, 7, 1, 1)
+        self.pos08 = QtGui.QLabel(self.gridLayoutWidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Maximum)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.pushButton_45.sizePolicy().hasHeightForWidth())
-        self.pushButton_45.setSizePolicy(sizePolicy)
-        self.pushButton_45.setObjectName(_fromUtf8("pushButton_45"))
-        self.gridLayout_5.addWidget(self.pushButton_45, 0, 8, 1, 1)
-        self.pushButton_53 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_53.setObjectName(_fromUtf8("pushButton_53"))
-        self.gridLayout_5.addWidget(self.pushButton_53, 2, 7, 1, 1)
-        self.pushButton_41 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_41.setObjectName(_fromUtf8("pushButton_41"))
-        self.gridLayout_5.addWidget(self.pushButton_41, 0, 4, 1, 1)
-        self.pushButton_44 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_44.setObjectName(_fromUtf8("pushButton_44"))
-        self.gridLayout_5.addWidget(self.pushButton_44, 0, 7, 1, 1)
-        self.pushButton_52 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_52.setObjectName(_fromUtf8("pushButton_52"))
-        self.gridLayout_5.addWidget(self.pushButton_52, 2, 9, 1, 1)
-        self.pushButton_43 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_43.setObjectName(_fromUtf8("pushButton_43"))
-        self.gridLayout_5.addWidget(self.pushButton_43, 0, 6, 1, 1)
-        self.pushButton_59 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_59.setObjectName(_fromUtf8("pushButton_59"))
-        self.gridLayout_5.addWidget(self.pushButton_59, 3, 9, 1, 1)
-        self.pushButton_64 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_64.setObjectName(_fromUtf8("pushButton_64"))
-        self.gridLayout_5.addWidget(self.pushButton_64, 4, 8, 1, 1)
-        self.pushButton_63 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_63.setObjectName(_fromUtf8("pushButton_63"))
-        self.gridLayout_5.addWidget(self.pushButton_63, 4, 7, 1, 1)
-        self.pushButton_68 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_68.setObjectName(_fromUtf8("pushButton_68"))
-        self.gridLayout_5.addWidget(self.pushButton_68, 2, 4, 1, 1)
-        self.pushButton_67 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_67.setObjectName(_fromUtf8("pushButton_67"))
-        self.gridLayout_5.addWidget(self.pushButton_67, 1, 4, 1, 1)
-        self.pushButton_50 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_50.setObjectName(_fromUtf8("pushButton_50"))
-        self.gridLayout_5.addWidget(self.pushButton_50, 1, 9, 1, 1)
-        self.pushButton_47 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_47.setObjectName(_fromUtf8("pushButton_47"))
-        self.gridLayout_5.addWidget(self.pushButton_47, 1, 8, 1, 1)
-        self.pushButton_69 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_69.setObjectName(_fromUtf8("pushButton_69"))
-        self.gridLayout_5.addWidget(self.pushButton_69, 3, 4, 1, 1)
-        self.pushButton_58 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_58.setObjectName(_fromUtf8("pushButton_58"))
-        self.gridLayout_5.addWidget(self.pushButton_58, 3, 6, 1, 1)
-        self.pushButton_57 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_57.setObjectName(_fromUtf8("pushButton_57"))
-        self.gridLayout_5.addWidget(self.pushButton_57, 3, 8, 1, 1)
-        self.pushButton_65 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_65.setObjectName(_fromUtf8("pushButton_65"))
-        self.gridLayout_5.addWidget(self.pushButton_65, 4, 6, 1, 1)
-        self.pushButton_60 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_60.setObjectName(_fromUtf8("pushButton_60"))
-        self.gridLayout_5.addWidget(self.pushButton_60, 3, 7, 1, 1)
-        self.pushButton_70 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_70.setObjectName(_fromUtf8("pushButton_70"))
-        self.gridLayout_5.addWidget(self.pushButton_70, 4, 4, 1, 1)
-        self.pushButton_139 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_139.setObjectName(_fromUtf8("pushButton_139"))
-        self.gridLayout_5.addWidget(self.pushButton_139, 6, 1, 1, 1)
-        self.pushButton_134 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_134.setObjectName(_fromUtf8("pushButton_134"))
-        self.gridLayout_5.addWidget(self.pushButton_134, 6, 2, 1, 1)
-        self.pushButton_62 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_62.setObjectName(_fromUtf8("pushButton_62"))
-        self.gridLayout_5.addWidget(self.pushButton_62, 4, 9, 1, 1)
-        self.pushButton_46 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_46.setObjectName(_fromUtf8("pushButton_46"))
-        self.gridLayout_5.addWidget(self.pushButton_46, 0, 9, 1, 1)
-        self.pushButton_158 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_158.setObjectName(_fromUtf8("pushButton_158"))
-        self.gridLayout_5.addWidget(self.pushButton_158, 9, 3, 1, 1)
-        self.pushButton_151 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_151.setObjectName(_fromUtf8("pushButton_151"))
-        self.gridLayout_5.addWidget(self.pushButton_151, 8, 3, 1, 1)
-        self.pushButton_150 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_150.setObjectName(_fromUtf8("pushButton_150"))
-        self.gridLayout_5.addWidget(self.pushButton_150, 8, 4, 1, 1)
-        self.pushButton_153 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_153.setObjectName(_fromUtf8("pushButton_153"))
-        self.gridLayout_5.addWidget(self.pushButton_153, 8, 5, 1, 1)
-        self.pushButton_155 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_155.setObjectName(_fromUtf8("pushButton_155"))
-        self.gridLayout_5.addWidget(self.pushButton_155, 8, 2, 1, 1)
-        self.pushButton_161 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_161.setObjectName(_fromUtf8("pushButton_161"))
-        self.gridLayout_5.addWidget(self.pushButton_161, 9, 2, 1, 1)
-        self.pushButton_149 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_149.setObjectName(_fromUtf8("pushButton_149"))
-        self.gridLayout_5.addWidget(self.pushButton_149, 8, 6, 1, 1)
-        self.pushButton_157 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_157.setObjectName(_fromUtf8("pushButton_157"))
-        self.gridLayout_5.addWidget(self.pushButton_157, 8, 1, 1, 1)
-        self.pushButton_164 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_164.setObjectName(_fromUtf8("pushButton_164"))
-        self.gridLayout_5.addWidget(self.pushButton_164, 9, 4, 1, 1)
-        self.pushButton_166 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_166.setObjectName(_fromUtf8("pushButton_166"))
-        self.gridLayout_5.addWidget(self.pushButton_166, 9, 1, 1, 1)
-        self.pushButton_165 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_165.setObjectName(_fromUtf8("pushButton_165"))
-        self.gridLayout_5.addWidget(self.pushButton_165, 9, 5, 1, 1)
-        self.pushButton_156 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_156.setObjectName(_fromUtf8("pushButton_156"))
-        self.gridLayout_5.addWidget(self.pushButton_156, 8, 9, 1, 1)
-        self.pushButton_154 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_154.setObjectName(_fromUtf8("pushButton_154"))
-        self.gridLayout_5.addWidget(self.pushButton_154, 8, 8, 1, 1)
-        self.pushButton_159 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_159.setObjectName(_fromUtf8("pushButton_159"))
-        self.gridLayout_5.addWidget(self.pushButton_159, 9, 6, 1, 1)
-        self.pushButton_162 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_162.setObjectName(_fromUtf8("pushButton_162"))
-        self.gridLayout_5.addWidget(self.pushButton_162, 9, 7, 1, 1)
-        self.pushButton_152 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_152.setObjectName(_fromUtf8("pushButton_152"))
-        self.gridLayout_5.addWidget(self.pushButton_152, 8, 7, 1, 1)
-        self.pushButton_160 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_160.setObjectName(_fromUtf8("pushButton_160"))
-        self.gridLayout_5.addWidget(self.pushButton_160, 9, 8, 1, 1)
-        self.pushButton_163 = QtGui.QPushButton(self.gridLayoutWidget)
-        self.pushButton_163.setObjectName(_fromUtf8("pushButton_163"))
-        self.gridLayout_5.addWidget(self.pushButton_163, 9, 9, 1, 1)
+        sizePolicy.setHeightForWidth(self.pos08.sizePolicy().hasHeightForWidth())
+        self.pos08.setSizePolicy(sizePolicy)
+        self.pos08.setObjectName(_fromUtf8("pos08"))
+        self.gridLayout_5.addWidget(self.pos08, 0, 8, 1, 1)
+        self.pos27 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos27.setObjectName(_fromUtf8("pos27"))
+        self.gridLayout_5.addWidget(self.pos27, 2, 7, 1, 1)
+        self.pos04 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos04.setObjectName(_fromUtf8("pos04"))
+        self.gridLayout_5.addWidget(self.pos04, 0, 4, 1, 1)
+        self.pos07 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos07.setObjectName(_fromUtf8("pos07"))
+        self.gridLayout_5.addWidget(self.pos07, 0, 7, 1, 1)
+        self.pos29 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos29.setObjectName(_fromUtf8("pos29"))
+        self.gridLayout_5.addWidget(self.pos29, 2, 9, 1, 1)
+        self.pos06 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos06.setObjectName(_fromUtf8("pos06"))
+        self.gridLayout_5.addWidget(self.pos06, 0, 6, 1, 1)
+        self.pos39 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos39.setObjectName(_fromUtf8("pos39"))
+        self.gridLayout_5.addWidget(self.pos39, 3, 9, 1, 1)
+        self.pos48 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos48.setObjectName(_fromUtf8("pos48"))
+        self.gridLayout_5.addWidget(self.pos48, 4, 8, 1, 1)
+        self.pos47 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos47.setObjectName(_fromUtf8("pos47"))
+        self.gridLayout_5.addWidget(self.pos47, 4, 7, 1, 1)
+        self.pos24 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos24.setObjectName(_fromUtf8("pos24"))
+        self.gridLayout_5.addWidget(self.pos24, 2, 4, 1, 1)
+        self.pos14 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos14.setObjectName(_fromUtf8("pos14"))
+        self.gridLayout_5.addWidget(self.pos14, 1, 4, 1, 1)
+        self.pos19 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos19.setObjectName(_fromUtf8("pos19"))
+        self.gridLayout_5.addWidget(self.pos19, 1, 9, 1, 1)
+        self.pos18 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos18.setObjectName(_fromUtf8("pos18"))
+        self.gridLayout_5.addWidget(self.pos18, 1, 8, 1, 1)
+        self.pos34 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos34.setObjectName(_fromUtf8("pos34"))
+        self.gridLayout_5.addWidget(self.pos34, 3, 4, 1, 1)
+        self.pos36 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos36.setObjectName(_fromUtf8("pos36"))
+        self.gridLayout_5.addWidget(self.pos36, 3, 6, 1, 1)
+        self.pos38 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos38.setObjectName(_fromUtf8("pos38"))
+        self.gridLayout_5.addWidget(self.pos38, 3, 8, 1, 1)
+        self.pos46 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos46.setObjectName(_fromUtf8("pos46"))
+        self.gridLayout_5.addWidget(self.pos46, 4, 6, 1, 1)
+        self.pos37 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos37.setObjectName(_fromUtf8("pos37"))
+        self.gridLayout_5.addWidget(self.pos37, 3, 7, 1, 1)
+        self.pos44 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos44.setObjectName(_fromUtf8("pos44"))
+        self.gridLayout_5.addWidget(self.pos44, 4, 4, 1, 1)
+        self.pos61 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos61.setObjectName(_fromUtf8("pos61"))
+        self.gridLayout_5.addWidget(self.pos61, 6, 1, 1, 1)
+        self.pos62 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos62.setObjectName(_fromUtf8("pos62"))
+        self.gridLayout_5.addWidget(self.pos62, 6, 2, 1, 1)
+        self.pos49 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos49.setObjectName(_fromUtf8("pos49"))
+        self.gridLayout_5.addWidget(self.pos49, 4, 9, 1, 1)
+        self.pos09 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos09.setObjectName(_fromUtf8("pos09"))
+        self.gridLayout_5.addWidget(self.pos09, 0, 9, 1, 1)
+        self.pos93 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos93.setObjectName(_fromUtf8("pos93"))
+        self.gridLayout_5.addWidget(self.pos93, 9, 3, 1, 1)
+        self.pos83 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos83.setObjectName(_fromUtf8("pos83"))
+        self.gridLayout_5.addWidget(self.pos83, 8, 3, 1, 1)
+        self.pos84 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos84.setObjectName(_fromUtf8("pos84"))
+        self.gridLayout_5.addWidget(self.pos84, 8, 4, 1, 1)
+        self.pos85 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos85.setObjectName(_fromUtf8("pos85"))
+        self.gridLayout_5.addWidget(self.pos85, 8, 5, 1, 1)
+        self.pos82 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos82.setObjectName(_fromUtf8("pos82"))
+        self.gridLayout_5.addWidget(self.pos82, 8, 2, 1, 1)
+        self.pos92 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos92.setObjectName(_fromUtf8("pos92"))
+        self.gridLayout_5.addWidget(self.pos92, 9, 2, 1, 1)
+        self.pos86 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos86.setObjectName(_fromUtf8("pos86"))
+        self.gridLayout_5.addWidget(self.pos86, 8, 6, 1, 1)
+        self.pos81 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos81.setObjectName(_fromUtf8("pos81"))
+        self.gridLayout_5.addWidget(self.pos81, 8, 1, 1, 1)
+        self.pos94 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos94.setObjectName(_fromUtf8("pos94"))
+        self.gridLayout_5.addWidget(self.pos94, 9, 4, 1, 1)
+        self.pos91 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos91.setObjectName(_fromUtf8("pos91"))
+        self.gridLayout_5.addWidget(self.pos91, 9, 1, 1, 1)
+        self.pos95 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos95.setObjectName(_fromUtf8("pos95"))
+        self.gridLayout_5.addWidget(self.pos95, 9, 5, 1, 1)
+        self.pos89 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos89.setObjectName(_fromUtf8("pos89"))
+        self.gridLayout_5.addWidget(self.pos89, 8, 9, 1, 1)
+        self.pos88 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos88.setObjectName(_fromUtf8("pos88"))
+        self.gridLayout_5.addWidget(self.pos88, 8, 8, 1, 1)
+        self.pos96 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos96.setObjectName(_fromUtf8("pos96"))
+        self.gridLayout_5.addWidget(self.pos96, 9, 6, 1, 1)
+        self.pos97 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos97.setObjectName(_fromUtf8("pos97"))
+        self.gridLayout_5.addWidget(self.pos97, 9, 7, 1, 1)
+        self.pos87 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos87.setObjectName(_fromUtf8("pos87"))
+        self.gridLayout_5.addWidget(self.pos87, 8, 7, 1, 1)
+        self.pos98 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos98.setObjectName(_fromUtf8("pos98"))
+        self.gridLayout_5.addWidget(self.pos98, 9, 8, 1, 1)
+        self.pos99 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos99.setObjectName(_fromUtf8("pos99"))
+        self.gridLayout_5.addWidget(self.pos99, 9, 9, 1, 1)
         self.gridLayout_7.addLayout(self.gridLayout_5, 1, 1, 1, 1)
         self.textEdit = QtGui.QTextEdit(self.gridLayoutWidget)
         self.textEdit.setObjectName(_fromUtf8("textEdit"))
@@ -357,6 +1074,7 @@ class Ui_MainWindow(object):
         self.execute_code.setFont(font)
         self.execute_code.setObjectName(_fromUtf8("execute_code"))
         self.gridLayout_7.addWidget(self.execute_code, 2, 0, 1, 1)
+        self.execute_code.clicked.connect(self.execute_code_from_board)
         self.label = QtGui.QLabel(self.gridLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(12)
@@ -374,8 +1092,8 @@ class Ui_MainWindow(object):
         self.label_2.setObjectName(_fromUtf8("label_2"))
         self.gridLayout_7.addWidget(self.label_2, 0, 1, 1, 1, QtCore.Qt.AlignHCenter)
         self.gridLayoutWidget.raise_()
-        self.pushButton_62.raise_()
-        self.pushButton_46.raise_()
+        self.pos49.raise_()
+        self.pos09.raise_()
         self.gridLayoutWidget.raise_()
         self.textEdit.raise_()
         MainWindow.setCentralWidget(self.centralwidget)
@@ -386,121 +1104,67 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+
+        global all_squares
+        all_squares = [ self.pos00, self.pos01, self.pos02, self.pos03, self.pos04, self.pos05, self.pos06, self.pos07, self.pos08, self.pos09, self.pos10, self.pos11, self.pos12, self.pos13, self.pos14, self.pos15, self.pos16, self.pos17, self.pos18, self.pos19, self.pos20, self.pos21, self.pos22, self.pos23, self.pos24, self.pos25, self.pos26, self.pos27, self.pos28, self.pos29, self.pos30, self.pos31, self.pos32, self.pos33, self.pos34, self.pos35, self.pos36, self.pos37, self.pos38, self.pos39, self.pos40, self.pos41, self.pos42, self.pos43, self.pos44, self.pos45, self.pos46, self.pos47, self.pos48, self.pos49, self.pos50, self.pos51, self.pos52, self.pos53, self.pos54, self.pos55, self.pos56, self.pos57, self.pos58, self.pos59, self.pos60, self.pos61, self.pos62, self.pos63, self.pos64, self.pos65, self.pos66, self.pos67, self.pos68, self.pos69, self.pos70, self.pos71, self.pos72, self.pos73, self.pos74, self.pos75, self.pos76, self.pos77, self.pos78, self.pos79, self.pos80, self.pos81, self.pos82, self.pos83, self.pos84, self.pos85, self.pos86, self.pos87, self.pos88, self.pos89, self.pos90, self.pos91, self.pos92, self.pos93, self.pos94, self.pos95, self.pos96, self.pos97, self.pos98, self.pos99]
+
+
+
+    def set_squares_blank(self):
+        global all_squares
+        pixmap = QtGui.QPixmap('blank.png')
+        for square in all_squares:
+            square.setPixmap(pixmap)
+
+
+    def set_walls(self):
+        pass
+
+    def set_karel(self):
+        pass
+
+    def move_board(self):
+        pass
+
+    def turn_left_board(self):
+        pass
+
+    def set_whole_board(self):
+        pass
+    #switch ()?
+    def execute_code_from_board(self):
+        global ci_count
+        ci_count = 0
+        global ci_list
+        ci_list = []
+        for i in range(10000):
+            ci_list.append(0)
+
+        karel_program = self.textEdit.toPlainText()
+        check_lex_and_syntax(karel_program)
+        print('reading form board')
+        return karel_program
+
+
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
-        self.pushButton_31.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_21.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_22.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_25.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_23.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_26.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_24.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_27.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_30.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_28.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_29.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_34.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_32.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_33.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_35.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_37.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_38.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_36.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_39.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_40.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_130.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_77.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_76.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_127.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_79.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_129.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_78.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_128.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_126.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_132.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_133.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_135.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_131.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_138.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_136.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_137.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_61.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_56.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_66.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_51.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_143.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_144.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_146.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_148.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_147.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_140.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_71.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_75.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_72.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_145.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_74.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_73.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_141.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_142.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_42.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_54.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_49.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_55.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_48.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_45.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_53.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_41.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_44.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_52.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_43.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_59.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_64.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_63.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_68.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_67.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_50.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_47.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_69.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_58.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_57.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_65.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_60.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_70.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_139.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_134.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_62.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_46.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_158.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_151.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_150.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_153.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_155.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_161.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_149.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_157.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_164.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_166.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_165.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_156.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_154.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_159.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_162.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_152.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_160.setText(_translate("MainWindow", "PushButton", None))
-        self.pushButton_163.setText(_translate("MainWindow", "PushButton", None))
         self.textEdit.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:7.5pt; font-weight:400; font-style:normal;\">\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">class program {</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">    program() {</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">    }</span></p>\n"
-"<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">}</span></p></body></html>", None))
+            "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+            "p, li { white-space: pre-wrap; }\n"
+            "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:15pt; font-weight:400; font-style:normal;\">\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">class program {</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">    program() {</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        if(left-is-blocked){</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">            move()</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        }</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        end()</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">    }</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">}</span></p></body></html>", None))
         self.reload_board.setText(_translate("MainWindow", "Reload Board", None))
         self.execute_code.setText(_translate("MainWindow", "Execute code", None))
         self.label.setText(_translate("MainWindow", "Karel code", None))
         self.label_2.setText(_translate("MainWindow", "Board", None))
+#    def set_icons(self, buttons_list):
 
 
 if __name__ == "__main__":
@@ -508,7 +1172,17 @@ if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     MainWindow = QtGui.QMainWindow()
     ui = Ui_MainWindow()
+
     ui.setupUi(MainWindow)
+    ui.set_squares_blank()
+
+
+
+
+
+
+
     MainWindow.show()
     sys.exit(app.exec_())
+
 

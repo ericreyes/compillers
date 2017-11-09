@@ -1,5 +1,6 @@
 import ply.lex as lex
-
+import pprint as pprint
+from PyQt4 import QtCore, QtGui
 
 class OurLexer(object):
     # List of token names.     This is always required
@@ -276,11 +277,8 @@ def add_symbol_to_table(symbol):
   global symbol_table
   global symbol_count
   symbol_count += 1
-  print(symbol_table)
-  print('ANTEEEEEESSSSSS')
   symbol_table.update({symbol: symbol_count})
-  print(symbol_table)
-  print('AGREGUE UNA FUNCION, BIEN VERGA')
+
 
 
 
@@ -426,7 +424,7 @@ def call_function():
 #------PENDIENTE_CI------
 #<name function> ::= <official function> | <customer function>
 def name_function():
-    if (verificar('move') or verificar("turnleft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end") or verificar("program")):
+    if (verificar('move') or verificar("turnleft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end")):
         #print ('obviamente entre a official fucntion')
         next_token = all_tokens[-1]
         add_code_in_ci(next_token)
@@ -443,11 +441,9 @@ def name_function():
 def customer_function():
     '''global all_tokens
     next_token = all_tokens[-1]
-    if (next_token in symbol_table):
-        add_code_in_ci(next_token)
-    else:
+    if (not next_token in symbol_table):
         add_symbol_to_table(next_token)
-        add_code_in_ci(next_token)
+    add_code_in_ci(next_token)
     print('CUSTOMER FUNCTION TOKEN {}'.format(next_token))
     exigir_identifier()'''
     global t_symbols
@@ -478,13 +474,7 @@ def if_expression():
                     else:
                         mostrarError("}")
                     actual_position = stack_positions.pop()
-                    #print(actual_position, 'poooooooop')
                     ci_list[actual_position] = ci_count
-                    #add_code_in_ci("JMP")
-                    #print(actual_position, 'poooooooop')
-                    #ci_list[ci_count] = stack_positions.pop()
-                    #add_one_to_ci()
-                    print_ci()
                 else:
                     mostrarError("{")
             else:
@@ -692,34 +682,506 @@ def official_function():
     else:
         mostrarError("a defined function")
 
-#------SIN TERMINAR------
-#<number> ::= numero natural del 1 al 100
-
-
 def number():
     exigir_numero()
 
+def check_lex_and_syntax(karel_program):
+    #karel_program = open('karel.txt').read()
+    lexer = OurLexer()
+    lexer.build()
 
-karel_program = open('karel.txt').read()
-lexer = OurLexer()
-lexer.build()
+    # lexer.test(karel_program)
+    global all_tokens
+    all_tokens = lexer.get_tokens(karel_program)
+    #token_types = lexer.get_tokens_types(karel_program)
+
+    # token_types.reverse()
+    all_tokens.reverse()
+    #print (all_tokens)
+
+    # Pa debuggear
+    #print (all_tokens)
+    #print (token_types)
+    program()
+
+def read_board_file(karel_file):
+    karel_matrix = [[0 for x in range(10)] for y in range(10)]
+    karel_tokens = open(karel_file).read().split()
+    karel_tokens.reverse()
+
+    for i, lista in enumerate(karel_matrix):
+        for j, element in enumerate(lista):
+            karel_matrix[i][j] = karel_tokens.pop()
+
+    # Use pretty print to print the matrix in console
+    #pprint.pprint((karel_matrix))
+    return karel_matrix
 
 
-# lexer.test(karel_program)
+
+#check_lex_and_syntax()
+karel_map_matrix = read_board_file('mapa.karel')
 
 
-all_tokens = lexer.get_tokens(karel_program)
-#token_types = lexer.get_tokens_types(karel_program)
 
-# token_types.reverse()
-all_tokens.reverse()
-#print (all_tokens)
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    def _fromUtf8(s):
+        return s
+
+try:
+    _encoding = QtGui.QApplication.UnicodeUTF8
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig, _encoding)
+except AttributeError:
+    def _translate(context, text, disambig):
+        return QtGui.QApplication.translate(context, text, disambig)
+
+class Ui_MainWindow(object):
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName(_fromUtf8("MainWindow"))
+        MainWindow.resize(1228, 891)
+        self.centralwidget = QtGui.QWidget(MainWindow)
+        self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
+        self.gridLayoutWidget = QtGui.QWidget(self.centralwidget)
+        self.gridLayoutWidget.setGeometry(QtCore.QRect(10, 20, 1211, 841))
+        self.gridLayoutWidget.setObjectName(_fromUtf8("gridLayoutWidget"))
+        self.gridLayout_7 = QtGui.QGridLayout(self.gridLayoutWidget)
+        self.gridLayout_7.setObjectName(_fromUtf8("gridLayout_7"))
+        self.gridLayout_5 = QtGui.QGridLayout()
+        self.gridLayout_5.setObjectName(_fromUtf8("gridLayout_5"))
+        self.pos03 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos03.setObjectName(_fromUtf8("pos03"))
+        self.gridLayout_5.addWidget(self.pos03, 0, 3, 1, 1)
+        self.pos21 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos21.setObjectName(_fromUtf8("pos21"))
+        self.gridLayout_5.addWidget(self.pos21, 2, 1, 1, 1)
+        self.pos01 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos01.setObjectName(_fromUtf8("pos01"))
+        self.gridLayout_5.addWidget(self.pos01, 0, 1, 1, 1)
+        self.pos31 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos31.setObjectName(_fromUtf8("pos31"))
+        self.gridLayout_5.addWidget(self.pos31, 3, 1, 1, 1)
+        self.pos23 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos23.setObjectName(_fromUtf8("pos23"))
+        self.gridLayout_5.addWidget(self.pos23, 2, 3, 1, 1)
+        self.pos00 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos00.setObjectName(_fromUtf8("pos00"))
+        self.gridLayout_5.addWidget(self.pos00, 0, 0, 1, 1)
+        self.pos02 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos02.setObjectName(_fromUtf8("pos02"))
+        self.gridLayout_5.addWidget(self.pos02, 0, 2, 1, 1)
+        self.pos10 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos10.setObjectName(_fromUtf8("pos10"))
+        self.gridLayout_5.addWidget(self.pos10, 1, 0, 1, 1)
+        self.pos42 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos42.setObjectName(_fromUtf8("pos42"))
+        self.gridLayout_5.addWidget(self.pos42, 4, 2, 1, 1)
+        self.pos30 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos30.setObjectName(_fromUtf8("pos30"))
+        self.gridLayout_5.addWidget(self.pos30, 3, 0, 1, 1)
+        self.pos20 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos20.setObjectName(_fromUtf8("pos20"))
+        self.gridLayout_5.addWidget(self.pos20, 2, 0, 1, 1)
+        self.pos32 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos32.setObjectName(_fromUtf8("pos32"))
+        self.gridLayout_5.addWidget(self.pos32, 3, 2, 1, 1)
+        self.pos13 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos13.setObjectName(_fromUtf8("pos13"))
+        self.gridLayout_5.addWidget(self.pos13, 1, 3, 1, 1)
+        self.pos22 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos22.setObjectName(_fromUtf8("pos22"))
+        self.gridLayout_5.addWidget(self.pos22, 2, 2, 1, 1)
+        self.pos33 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos33.setObjectName(_fromUtf8("pos33"))
+        self.gridLayout_5.addWidget(self.pos33, 3, 3, 1, 1)
+        self.pos12 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos12.setObjectName(_fromUtf8("pos12"))
+        self.gridLayout_5.addWidget(self.pos12, 1, 2, 1, 1)
+        self.pos11 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos11.setObjectName(_fromUtf8("pos11"))
+        self.gridLayout_5.addWidget(self.pos11, 1, 1, 1, 1)
+        self.pos41 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos41.setObjectName(_fromUtf8("pos41"))
+        self.gridLayout_5.addWidget(self.pos41, 4, 1, 1, 1)
+        self.pos40 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos40.setObjectName(_fromUtf8("pos40"))
+        self.gridLayout_5.addWidget(self.pos40, 4, 0, 1, 1)
+        self.pos43 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos43.setObjectName(_fromUtf8("pos43"))
+        self.gridLayout_5.addWidget(self.pos43, 4, 3, 1, 1)
+        self.pos51 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos51.setObjectName(_fromUtf8("pos51"))
+        self.gridLayout_5.addWidget(self.pos51, 5, 1, 1, 1)
+        self.pos57 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos57.setObjectName(_fromUtf8("pos57"))
+        self.gridLayout_5.addWidget(self.pos57, 5, 7, 1, 1)
+        self.pos58 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos58.setObjectName(_fromUtf8("pos58"))
+        self.gridLayout_5.addWidget(self.pos58, 5, 8, 1, 1)
+        self.pos55 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos55.setObjectName(_fromUtf8("pos55"))
+        self.gridLayout_5.addWidget(self.pos55, 5, 5, 1, 1)
+        self.pos56 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos56.setObjectName(_fromUtf8("pos56"))
+        self.gridLayout_5.addWidget(self.pos56, 5, 6, 1, 1)
+        self.pos59 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos59.setObjectName(_fromUtf8("pos59"))
+        self.gridLayout_5.addWidget(self.pos59, 5, 9, 1, 1)
+        self.pos52 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos52.setObjectName(_fromUtf8("pos52"))
+        self.gridLayout_5.addWidget(self.pos52, 5, 2, 1, 1)
+        self.pos53 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos53.setObjectName(_fromUtf8("pos53"))
+        self.gridLayout_5.addWidget(self.pos53, 5, 3, 1, 1)
+        self.pos54 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos54.setObjectName(_fromUtf8("pos54"))
+        self.gridLayout_5.addWidget(self.pos54, 5, 4, 1, 1)
+        self.pos67 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos67.setObjectName(_fromUtf8("pos67"))
+        self.gridLayout_5.addWidget(self.pos67, 6, 7, 1, 1)
+        self.pos63 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos63.setObjectName(_fromUtf8("pos63"))
+        self.gridLayout_5.addWidget(self.pos63, 6, 3, 1, 1)
+        self.pos64 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos64.setObjectName(_fromUtf8("pos64"))
+        self.gridLayout_5.addWidget(self.pos64, 6, 4, 1, 1)
+        self.pos65 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos65.setObjectName(_fromUtf8("pos65"))
+        self.gridLayout_5.addWidget(self.pos65, 6, 5, 1, 1)
+        self.pos66 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos66.setObjectName(_fromUtf8("pos66"))
+        self.gridLayout_5.addWidget(self.pos66, 6, 6, 1, 1)
+        self.pos68 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos68.setObjectName(_fromUtf8("pos68"))
+        self.gridLayout_5.addWidget(self.pos68, 6, 8, 1, 1)
+        self.pos69 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos69.setObjectName(_fromUtf8("pos69"))
+        self.gridLayout_5.addWidget(self.pos69, 6, 9, 1, 1)
+        self.pos35 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos35.setObjectName(_fromUtf8("pos35"))
+        self.gridLayout_5.addWidget(self.pos35, 3, 5, 1, 1)
+        self.pos25 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos25.setObjectName(_fromUtf8("pos25"))
+        self.gridLayout_5.addWidget(self.pos25, 2, 5, 1, 1)
+        self.pos45 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos45.setObjectName(_fromUtf8("pos45"))
+        self.gridLayout_5.addWidget(self.pos45, 4, 5, 1, 1)
+        self.pos15 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos15.setObjectName(_fromUtf8("pos15"))
+        self.gridLayout_5.addWidget(self.pos15, 1, 5, 1, 1)
+        self.pos75 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos75.setObjectName(_fromUtf8("pos75"))
+        self.gridLayout_5.addWidget(self.pos75, 7, 5, 1, 1)
+        self.pos74 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos74.setObjectName(_fromUtf8("pos74"))
+        self.gridLayout_5.addWidget(self.pos74, 7, 4, 1, 1)
+        self.pos72 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos72.setObjectName(_fromUtf8("pos72"))
+        self.gridLayout_5.addWidget(self.pos72, 7, 2, 1, 1)
+        self.pos71 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos71.setObjectName(_fromUtf8("pos71"))
+        self.gridLayout_5.addWidget(self.pos71, 7, 1, 1, 1)
+        self.pos73 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos73.setObjectName(_fromUtf8("pos73"))
+        self.gridLayout_5.addWidget(self.pos73, 7, 3, 1, 1)
+        self.pos77 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos77.setObjectName(_fromUtf8("pos77"))
+        self.gridLayout_5.addWidget(self.pos77, 7, 7, 1, 1)
+        self.pos70 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos70.setObjectName(_fromUtf8("pos70"))
+        self.gridLayout_5.addWidget(self.pos70, 7, 0, 1, 1)
+        self.pos90 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos90.setObjectName(_fromUtf8("pos90"))
+        self.gridLayout_5.addWidget(self.pos90, 9, 0, 1, 1)
+        self.pos80 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos80.setObjectName(_fromUtf8("pos80"))
+        self.gridLayout_5.addWidget(self.pos80, 8, 0, 1, 1)
+        self.pos76 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos76.setObjectName(_fromUtf8("pos76"))
+        self.gridLayout_5.addWidget(self.pos76, 7, 6, 1, 1)
+        self.pos50 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos50.setObjectName(_fromUtf8("pos50"))
+        self.gridLayout_5.addWidget(self.pos50, 5, 0, 1, 1)
+        self.pos60 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos60.setObjectName(_fromUtf8("pos60"))
+        self.gridLayout_5.addWidget(self.pos60, 6, 0, 1, 1)
+        self.pos78 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos78.setObjectName(_fromUtf8("pos78"))
+        self.gridLayout_5.addWidget(self.pos78, 7, 8, 1, 1)
+        self.pos79 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos79.setObjectName(_fromUtf8("pos79"))
+        self.gridLayout_5.addWidget(self.pos79, 7, 9, 1, 1)
+        self.pos05 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos05.setObjectName(_fromUtf8("pos05"))
+        self.gridLayout_5.addWidget(self.pos05, 0, 5, 1, 1)
+        self.pos28 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos28.setObjectName(_fromUtf8("pos28"))
+        self.gridLayout_5.addWidget(self.pos28, 2, 8, 1, 1)
+        self.pos16 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos16.setObjectName(_fromUtf8("pos16"))
+        self.gridLayout_5.addWidget(self.pos16, 1, 6, 1, 1)
+        self.pos26 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos26.setObjectName(_fromUtf8("pos26"))
+        self.gridLayout_5.addWidget(self.pos26, 2, 6, 1, 1)
+        self.pos17 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos17.setObjectName(_fromUtf8("pos17"))
+        self.gridLayout_5.addWidget(self.pos17, 1, 7, 1, 1)
+        self.pos08 = QtGui.QLabel(self.gridLayoutWidget)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Maximum)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.pos08.sizePolicy().hasHeightForWidth())
+        self.pos08.setSizePolicy(sizePolicy)
+        self.pos08.setObjectName(_fromUtf8("pos08"))
+        self.gridLayout_5.addWidget(self.pos08, 0, 8, 1, 1)
+        self.pos27 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos27.setObjectName(_fromUtf8("pos27"))
+        self.gridLayout_5.addWidget(self.pos27, 2, 7, 1, 1)
+        self.pos04 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos04.setObjectName(_fromUtf8("pos04"))
+        self.gridLayout_5.addWidget(self.pos04, 0, 4, 1, 1)
+        self.pos07 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos07.setObjectName(_fromUtf8("pos07"))
+        self.gridLayout_5.addWidget(self.pos07, 0, 7, 1, 1)
+        self.pos29 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos29.setObjectName(_fromUtf8("pos29"))
+        self.gridLayout_5.addWidget(self.pos29, 2, 9, 1, 1)
+        self.pos06 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos06.setObjectName(_fromUtf8("pos06"))
+        self.gridLayout_5.addWidget(self.pos06, 0, 6, 1, 1)
+        self.pos39 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos39.setObjectName(_fromUtf8("pos39"))
+        self.gridLayout_5.addWidget(self.pos39, 3, 9, 1, 1)
+        self.pos48 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos48.setObjectName(_fromUtf8("pos48"))
+        self.gridLayout_5.addWidget(self.pos48, 4, 8, 1, 1)
+        self.pos47 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos47.setObjectName(_fromUtf8("pos47"))
+        self.gridLayout_5.addWidget(self.pos47, 4, 7, 1, 1)
+        self.pos24 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos24.setObjectName(_fromUtf8("pos24"))
+        self.gridLayout_5.addWidget(self.pos24, 2, 4, 1, 1)
+        self.pos14 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos14.setObjectName(_fromUtf8("pos14"))
+        self.gridLayout_5.addWidget(self.pos14, 1, 4, 1, 1)
+        self.pos19 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos19.setObjectName(_fromUtf8("pos19"))
+        self.gridLayout_5.addWidget(self.pos19, 1, 9, 1, 1)
+        self.pos18 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos18.setObjectName(_fromUtf8("pos18"))
+        self.gridLayout_5.addWidget(self.pos18, 1, 8, 1, 1)
+        self.pos34 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos34.setObjectName(_fromUtf8("pos34"))
+        self.gridLayout_5.addWidget(self.pos34, 3, 4, 1, 1)
+        self.pos36 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos36.setObjectName(_fromUtf8("pos36"))
+        self.gridLayout_5.addWidget(self.pos36, 3, 6, 1, 1)
+        self.pos38 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos38.setObjectName(_fromUtf8("pos38"))
+        self.gridLayout_5.addWidget(self.pos38, 3, 8, 1, 1)
+        self.pos46 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos46.setObjectName(_fromUtf8("pos46"))
+        self.gridLayout_5.addWidget(self.pos46, 4, 6, 1, 1)
+        self.pos37 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos37.setObjectName(_fromUtf8("pos37"))
+        self.gridLayout_5.addWidget(self.pos37, 3, 7, 1, 1)
+        self.pos44 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos44.setObjectName(_fromUtf8("pos44"))
+        self.gridLayout_5.addWidget(self.pos44, 4, 4, 1, 1)
+        self.pos61 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos61.setObjectName(_fromUtf8("pos61"))
+        self.gridLayout_5.addWidget(self.pos61, 6, 1, 1, 1)
+        self.pos62 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos62.setObjectName(_fromUtf8("pos62"))
+        self.gridLayout_5.addWidget(self.pos62, 6, 2, 1, 1)
+        self.pos49 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos49.setObjectName(_fromUtf8("pos49"))
+        self.gridLayout_5.addWidget(self.pos49, 4, 9, 1, 1)
+        self.pos09 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos09.setObjectName(_fromUtf8("pos09"))
+        self.gridLayout_5.addWidget(self.pos09, 0, 9, 1, 1)
+        self.pos93 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos93.setObjectName(_fromUtf8("pos93"))
+        self.gridLayout_5.addWidget(self.pos93, 9, 3, 1, 1)
+        self.pos83 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos83.setObjectName(_fromUtf8("pos83"))
+        self.gridLayout_5.addWidget(self.pos83, 8, 3, 1, 1)
+        self.pos84 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos84.setObjectName(_fromUtf8("pos84"))
+        self.gridLayout_5.addWidget(self.pos84, 8, 4, 1, 1)
+        self.pos85 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos85.setObjectName(_fromUtf8("pos85"))
+        self.gridLayout_5.addWidget(self.pos85, 8, 5, 1, 1)
+        self.pos82 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos82.setObjectName(_fromUtf8("pos82"))
+        self.gridLayout_5.addWidget(self.pos82, 8, 2, 1, 1)
+        self.pos92 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos92.setObjectName(_fromUtf8("pos92"))
+        self.gridLayout_5.addWidget(self.pos92, 9, 2, 1, 1)
+        self.pos86 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos86.setObjectName(_fromUtf8("pos86"))
+        self.gridLayout_5.addWidget(self.pos86, 8, 6, 1, 1)
+        self.pos81 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos81.setObjectName(_fromUtf8("pos81"))
+        self.gridLayout_5.addWidget(self.pos81, 8, 1, 1, 1)
+        self.pos94 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos94.setObjectName(_fromUtf8("pos94"))
+        self.gridLayout_5.addWidget(self.pos94, 9, 4, 1, 1)
+        self.pos91 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos91.setObjectName(_fromUtf8("pos91"))
+        self.gridLayout_5.addWidget(self.pos91, 9, 1, 1, 1)
+        self.pos95 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos95.setObjectName(_fromUtf8("pos95"))
+        self.gridLayout_5.addWidget(self.pos95, 9, 5, 1, 1)
+        self.pos89 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos89.setObjectName(_fromUtf8("pos89"))
+        self.gridLayout_5.addWidget(self.pos89, 8, 9, 1, 1)
+        self.pos88 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos88.setObjectName(_fromUtf8("pos88"))
+        self.gridLayout_5.addWidget(self.pos88, 8, 8, 1, 1)
+        self.pos96 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos96.setObjectName(_fromUtf8("pos96"))
+        self.gridLayout_5.addWidget(self.pos96, 9, 6, 1, 1)
+        self.pos97 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos97.setObjectName(_fromUtf8("pos97"))
+        self.gridLayout_5.addWidget(self.pos97, 9, 7, 1, 1)
+        self.pos87 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos87.setObjectName(_fromUtf8("pos87"))
+        self.gridLayout_5.addWidget(self.pos87, 8, 7, 1, 1)
+        self.pos98 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos98.setObjectName(_fromUtf8("pos98"))
+        self.gridLayout_5.addWidget(self.pos98, 9, 8, 1, 1)
+        self.pos99 = QtGui.QLabel(self.gridLayoutWidget)
+        self.pos99.setObjectName(_fromUtf8("pos99"))
+        self.gridLayout_5.addWidget(self.pos99, 9, 9, 1, 1)
+        self.gridLayout_7.addLayout(self.gridLayout_5, 1, 1, 1, 1)
+        self.textEdit = QtGui.QTextEdit(self.gridLayoutWidget)
+        self.textEdit.setObjectName(_fromUtf8("textEdit"))
+        self.gridLayout_7.addWidget(self.textEdit, 1, 0, 1, 1)
+        self.reload_board = QtGui.QPushButton(self.gridLayoutWidget)
+        self.reload_board.setMaximumSize(QtCore.QSize(995, 16777215))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.reload_board.setFont(font)
+        self.reload_board.setObjectName(_fromUtf8("reload_board"))
+        self.gridLayout_7.addWidget(self.reload_board, 2, 1, 1, 1)
+        self.execute_code = QtGui.QPushButton(self.gridLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        self.execute_code.setFont(font)
+        self.execute_code.setObjectName(_fromUtf8("execute_code"))
+        self.gridLayout_7.addWidget(self.execute_code, 2, 0, 1, 1)
+        self.execute_code.clicked.connect(self.execute_code_from_board)
+        self.label = QtGui.QLabel(self.gridLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label.setFont(font)
+        self.label.setObjectName(_fromUtf8("label"))
+        self.gridLayout_7.addWidget(self.label, 0, 0, 1, 1, QtCore.Qt.AlignHCenter)
+        self.label_2 = QtGui.QLabel(self.gridLayoutWidget)
+        font = QtGui.QFont()
+        font.setPointSize(15)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_2.setFont(font)
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.gridLayout_7.addWidget(self.label_2, 0, 1, 1, 1, QtCore.Qt.AlignHCenter)
+        self.gridLayoutWidget.raise_()
+        self.pos49.raise_()
+        self.pos09.raise_()
+        self.gridLayoutWidget.raise_()
+        self.textEdit.raise_()
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.statusbar = QtGui.QStatusBar(MainWindow)
+        self.statusbar.setObjectName(_fromUtf8("statusbar"))
+        MainWindow.setStatusBar(self.statusbar)
+
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
 
-# Pa debuggear
-#print (all_tokens)
-#print (token_types)
+        global all_squares
+        all_squares = [ self.pos00, self.pos01, self.pos02, self.pos03, self.pos04, self.pos05, self.pos06, self.pos07, self.pos08, self.pos09, self.pos10, self.pos11, self.pos12, self.pos13, self.pos14, self.pos15, self.pos16, self.pos17, self.pos18, self.pos19, self.pos20, self.pos21, self.pos22, self.pos23, self.pos24, self.pos25, self.pos26, self.pos27, self.pos28, self.pos29, self.pos30, self.pos31, self.pos32, self.pos33, self.pos34, self.pos35, self.pos36, self.pos37, self.pos38, self.pos39, self.pos40, self.pos41, self.pos42, self.pos43, self.pos44, self.pos45, self.pos46, self.pos47, self.pos48, self.pos49, self.pos50, self.pos51, self.pos52, self.pos53, self.pos54, self.pos55, self.pos56, self.pos57, self.pos58, self.pos59, self.pos60, self.pos61, self.pos62, self.pos63, self.pos64, self.pos65, self.pos66, self.pos67, self.pos68, self.pos69, self.pos70, self.pos71, self.pos72, self.pos73, self.pos74, self.pos75, self.pos76, self.pos77, self.pos78, self.pos79, self.pos80, self.pos81, self.pos82, self.pos83, self.pos84, self.pos85, self.pos86, self.pos87, self.pos88, self.pos89, self.pos90, self.pos91, self.pos92, self.pos93, self.pos94, self.pos95, self.pos96, self.pos97, self.pos98, self.pos99]
 
 
-program()
+
+    def set_squares_blank(self):
+        global all_squares
+        pixmap = QtGui.QPixmap('blank.png')
+        for square in all_squares:
+            square.setPixmap(pixmap)
+
+
+    def set_walls(self):
+        pass
+
+    def set_karel(self):
+        pass
+
+    def move_board(self):
+        pass
+
+    def turn_left_board(self):
+        pass
+
+    def set_whole_board(self):
+        pass
+    #switch ()?
+    def execute_code_from_board(self):
+        global ci_count
+        ci_count = 0
+        global ci_list
+        ci_list = []
+        for i in range(10000):
+            ci_list.append(0)
+
+        karel_program = self.textEdit.toPlainText()
+        check_lex_and_syntax(karel_program)
+        print('reading form board')
+        return karel_program
+
+
+    def retranslateUi(self, MainWindow):
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
+        self.textEdit.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+            "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+            "p, li { white-space: pre-wrap; }\n"
+            "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:15pt; font-weight:400; font-style:normal;\">\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">class program {</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">    program() {</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        if(left-is-blocked){</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">            move()</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        }</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        end()</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">    }</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">}</span></p></body></html>", None))
+        self.reload_board.setText(_translate("MainWindow", "Reload Board", None))
+        self.execute_code.setText(_translate("MainWindow", "Execute code", None))
+        self.label.setText(_translate("MainWindow", "Karel code", None))
+        self.label_2.setText(_translate("MainWindow", "Board", None))
+#    def set_icons(self, buttons_list):
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtGui.QApplication(sys.argv)
+    MainWindow = QtGui.QMainWindow()
+    ui = Ui_MainWindow()
+
+    ui.setupUi(MainWindow)
+    ui.set_squares_blank()
+
+
+
+
+
+
+
+    MainWindow.show()
+    sys.exit(app.exec_())
+
 
