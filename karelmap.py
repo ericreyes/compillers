@@ -1128,6 +1128,9 @@ class Ui_MainWindow(object):
         pixmap = QtGui.QPixmap('blank.png')
         for square in all_squares:
             square.setPixmap(pixmap)
+        transform = QtGui.QTransform()
+        #transform.rotate(-180)
+        self.pos00.setPixmap(QtGui.QPixmap('pls.png').transformed(transform))
 
 
     def set_walls(self):
