@@ -1,6 +1,6 @@
 import ply.lex as lex
 import pprint as pprint
-import PyQt4
+from PyQt4 import QtCore, QtGui
 
 class OurLexer(object):
     # List of token names.     This is always required
@@ -186,7 +186,7 @@ class OurLexer(object):
 # print (all_tokens)
 
 # all_tokens2 = all_tokens
-
+global karel_map_matrix
 
 def verificar(expected_token):
     global all_tokens
@@ -705,9 +705,10 @@ def check_lex_and_syntax(karel_program):
     #print (token_types)
     program()
 
-def read_board_file(karel_file):
+def read_board_file():
+    print("reading from file, reload")
     karel_matrix = [[0 for x in range(10)] for y in range(10)]
-    karel_tokens = open(karel_file).read().split()
+    karel_tokens = open("mapa.karel").read().split()
     karel_tokens.reverse()
 
     for i, lista in enumerate(karel_matrix):
@@ -716,12 +717,16 @@ def read_board_file(karel_file):
 
     # Use pretty print to print the matrix in console
     #pprint.pprint((karel_matrix))
+    global karel_map_matrix 
+    karel_map_matrix = karel_matrix
+
     return karel_matrix
 
 
 
 #check_lex_and_syntax()
-karel_map_matrix = read_board_file('mapa.karel')
+
+
 
 
 
@@ -743,6 +748,13 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
         MainWindow.resize(1228, 891)
+
+        self.EAST = True
+        self.NORTH = False
+        self.WEST = False
+        self.SOUTH = False
+
+
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.gridLayoutWidget = QtGui.QWidget(self.centralwidget)
@@ -1067,6 +1079,7 @@ class Ui_MainWindow(object):
         font.setPointSize(12)
         self.reload_board.setFont(font)
         self.reload_board.setObjectName(_fromUtf8("reload_board"))
+        self.reload_board.clicked.connect(read_board_file)
         self.gridLayout_7.addWidget(self.reload_board, 2, 1, 1, 1)
         self.execute_code = QtGui.QPushButton(self.gridLayoutWidget)
         font = QtGui.QFont()
@@ -1124,10 +1137,34 @@ class Ui_MainWindow(object):
         pass
 
     def move_board(self):
-        pass
+        global all_squares
+        if (self.NORTH == True):
+            pass
+            
+        elif (self.WEST == True):
+            pass
+        elif (self.SOUTH == True):
+            pass
+        elif (self.EAST == True):
+            pass
 
     def turn_left_board(self):
-        pass
+        if (self.NORTH == True):
+            self.NORTH = False
+            self.WEST = True
+            #Set image looking west
+        elif (self.WEST == True):
+            self.WEST = False
+            self.SOUTH = True
+            #Set image looking west
+        elif (self.SOUTH == True):
+            self.SOUTH = False
+            self.EAST = True
+            #Set image looking west
+        elif (self.EAST == True):
+            self.EAST = False
+            self.NORTH = True
+            #Set image looking west
 
     def set_whole_board(self):
         pass
