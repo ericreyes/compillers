@@ -1,8 +1,6 @@
-###
 import ply.lex as lex
 import pprint as pprint
-from PyQt4 import QtCore, QtGui
-import os
+import PyQt4
 
 class OurLexer(object):
     # List of token names.     This is always required
@@ -151,7 +149,6 @@ class OurLexer(object):
       'putBeeper': 9003,
       'pickBeeper': 9004,
       'end': 9005,
-      'program': 9010,
       #conditionals
       'front-is-clear': 8001,
       'left-is-clear': 8002,
@@ -275,7 +272,7 @@ def print_ci():
       print(x,ci_list[x])
     print('#################')
 
-
+''' ESTO YA NO VALE MAS QUE PA PURA VERGA'''
 def add_symbol_to_table(symbol):
   global symbol_table
   global symbol_count
@@ -296,6 +293,9 @@ def mostrarError(expected_token):
 #<program> ::= "class" "program" "{" <functions> <main function> "}"
 def program():
     if (exigir("class")):
+        add_code_in_ci("JMP")
+        stack_positions.append(ci_count)
+        print (stack_positions, "la tabla de posiciones")
         if (exigir("program")):
             if (exigir("{")):
                 functions()
@@ -329,10 +329,13 @@ def functions_prima():
 #------PENDIENTE_CI------
 def main_function():
     if (exigir("program")):
-        add_code_in_ci("program")
         if (exigir("(")):
             if (exigir(")")):
                 if (exigir("{")):
+                    actual_position = stack_positions.pop()
+                    print(actual_position, 'poooooooop')
+                    ci_list[actual_position] = ci_count + 1
+                    add_one_to_ci()
                     body()
                     if (not exigir("}")):
                         mostrarError("}")
@@ -351,7 +354,6 @@ def main_function():
 def function():
     print ('CORRIENDO FUNCIOOOOOOOOOOOOOOOOOOOOOOOOON')
     if (exigir("void")):
-
         name_function() #HERE
         if (exigir("(")):
             if (exigir(")")):
@@ -431,15 +433,23 @@ def name_function():
     else:
         customer_function()
 
-
+#------PENDIENTE_ARREGLAR------
+#------PENDIENTE_ARREGLAR------
+#------PENDIENTE_ARREGLAR------
+#------PENDIENTE_ARREGLAR------
+#------PENDIENTE_ARREGLAR------
 def customer_function():
-    global all_tokens
+    '''global all_tokens
     next_token = all_tokens[-1]
     if (not next_token in symbol_table):
         add_symbol_to_table(next_token)
     add_code_in_ci(next_token)
     print('CUSTOMER FUNCTION TOKEN {}'.format(next_token))
-    exigir_identifier()
+    exigir_identifier()'''
+    global t_symbols
+    t_symbols = {}
+    next_token = all_tokens[-1]
+
 
 #------PENDIENTE_CI------
 #<if expression> ::= "if" "(" <condition> ")" "{" <body>    "}" <else>
@@ -520,10 +530,10 @@ def while_expression():
                     if (not exigir("}")):
                         mostrarError("}")
                     actual_position = stack_positions.pop()
-                    #print(actual_position, 'poooooooop')
+                    print(actual_position, 'poooooooop')
                     ci_list[actual_position] = ci_count + 2
                     add_code_in_ci("JMP")
-                    #print(actual_position, 'poooooooop')
+                    print(actual_position, 'poooooooop22222')
                     ci_list[ci_count] = stack_positions.pop()
                     add_one_to_ci()
                     print_ci()
@@ -674,6 +684,7 @@ def official_function():
 
 def number():
     exigir_numero()
+
 
 def check_lex_and_syntax(karel_program):
     #karel_program = open('karel.txt').read()
@@ -1153,9 +1164,7 @@ class Ui_MainWindow(object):
         self.execute_code.setText(_translate("MainWindow", "Execute code", None))
         self.label.setText(_translate("MainWindow", "Karel code", None))
         self.label_2.setText(_translate("MainWindow", "Board", None))
-
 #    def set_icons(self, buttons_list):
-
 
 
 if __name__ == "__main__":
@@ -1175,14 +1184,5 @@ if __name__ == "__main__":
 
     MainWindow.show()
     sys.exit(app.exec_())
-
-
-
-
-
-
-
-
-
 
 
