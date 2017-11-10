@@ -1143,7 +1143,6 @@ class Ui_MainWindow(object):
         global all_squares
         if (self.NORTH == True):
             pass
-            
         elif (self.WEST == True):
             pass
         elif (self.SOUTH == True):
