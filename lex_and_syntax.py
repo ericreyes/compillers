@@ -728,6 +728,7 @@ def read_board_file():
     global karel_map_matrix
     karel_map_matrix = karel_matrix
 
+    setup_board(karel_map_matrix)
     return karel_matrix
 
 
