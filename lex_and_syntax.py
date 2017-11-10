@@ -737,22 +737,37 @@ def read_board_file():
 def setup_board(karel_map_matrix):
     global all_squares
 
-    blank_square = QtGui.QPixmap('blank.png')
-    wall = QtGui.QPixmap('wall.png')
-    karel = QtGui.QPixmap('pls.png')
-    beeper = QtGui.QPixmap('beeper.png')
+    blank_square = QtGui.QPixmap('images/blank.png')
+    wall = QtGui.QPixmap('images/wall.png')
+    karelN = QtGui.QPixmap('images/karelN.png')
+    karelS = QtGui.QPixmap('images/karelS.png')
+    karelE = QtGui.QPixmap('images/karelE.png')
+    karelW = QtGui.QPixmap('images/karelW.png')
+    beeper = QtGui.QPixmap('images/beeper.png')
+
+    # transform = QtGui.QTransform()
+    # transform.rotate(-180)
+    # self.pos00.setPixmap(QtGui.QPixmap('pls.png').transformed(transform))
 
 
     for i, array in enumerate(all_squares):
         for j, square in enumerate(array):
             if(karel_map_matrix[i][j] == '-'):
                 square.setPixmap(blank_square)
-            elif(karel_map_matrix[i][j] == 'W'):
+            elif(karel_map_matrix[i][j] == 'B'):
                 square.setPixmap(wall)
             elif(karel_map_matrix[i][j] == 'K'):
                 square.setPixmap(karel)
             elif(karel_map_matrix[i][j].isdigit()):
                 square.setPixmap(beeper)
+            elif(karel_map_matrix[i][j] == 'N'):
+                square.setPixmap(karelN)
+            elif(karel_map_matrix[i][j] == 'S'):
+                square.setPixmap(karelS)
+            elif(karel_map_matrix[i][j] == 'E'):
+                square.setPixmap(karelE)
+            elif(karel_map_matrix[i][j] == 'W'):
+                square.setPixmap(karelW)
             else:
                 raise Exception('Invalid symbol in Karel File, unable to reload')
 
