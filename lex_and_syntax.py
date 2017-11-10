@@ -1223,7 +1223,7 @@ if __name__ == "__main__":
 
     ui.setupUi(MainWindow)
 
-    karel_map_matrix = read_board_file('mapa.karel')
+    karel_map_matrix = read_board_file()
     setup_board(karel_map_matrix)
 
 
