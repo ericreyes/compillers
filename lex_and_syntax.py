@@ -142,6 +142,7 @@ class OurLexer(object):
       'iterate': 520,
       'JMP': 530,
       'RET': 540,
+      'CALL': 600,
 
       #official functions
       'move': 9001,
@@ -168,10 +169,10 @@ class OurLexer(object):
       'not-facing-west': 8016,
       'any-beepers-in-beeper-bag': 8017,
       'no-beepers-in-beeper-bag': 8018,
-
     }
-    symbol_count = len(symbol_table) + 8999
 
+global t_symbols
+t_symbols = {}
 
 # karel_program = open('karel.txt').read()
 # lexer = OurLexer()
@@ -278,8 +279,8 @@ def add_symbol_to_table(symbol):
   global symbol_count
   symbol_count += 1
   symbol_table.update({symbol: symbol_count})
-
-
+  print(symbol_table)
+  print('AGREGUE UNA FUNCION, BIEN VERGA')
 
 
 #------------------------------------------------------------------------------------------------
@@ -298,6 +299,7 @@ def program():
         print (stack_positions, "la tabla de posiciones")
         if (exigir("program")):
             if (exigir("{")):
+                add_one_to_ci()
                 functions()
                 main_function()
                 if (not exigir("}")):
@@ -334,8 +336,7 @@ def main_function():
                 if (exigir("{")):
                     actual_position = stack_positions.pop()
                     print(actual_position, 'poooooooop')
-                    ci_list[actual_position] = ci_count + 1
-                    add_one_to_ci()
+                    ci_list[actual_position] = ci_count
                     body()
                     if (not exigir("}")):
                         mostrarError("}")
@@ -352,9 +353,9 @@ def main_function():
 #------PENDIENTE_CI------
 #<function> ::= "void" <name function> "("    ")" "{" <body> "}"
 def function():
-    print ('CORRIENDO FUNCIOOOOOOOOOOOOOOOOOOOOOOOOON')
+    print ('CUSTOMEEEEEERRRRRRRRRRR!!!!!!!!!!!')
     if (exigir("void")):
-        name_function() #HERE
+        customer_function() #HERE
         if (exigir("(")):
             if (exigir(")")):
                 print ('EXIJO BRACKETS EN FUNCTION')
@@ -362,7 +363,7 @@ def function():
                     body()
                     if (not exigir("}")):
                         mostrarError("}")
-                        add_code_in_ci("RET")
+                    add_code_in_ci("RET")
                 else:
                     mostrarError("{")
             else:
@@ -412,7 +413,6 @@ def expression():
 def call_function():
     name_function()
     #print ('exigiendo parentesis en call function')
-
     if (exigir("(")):
         if (not exigir(")")):
             mostrarError(")")
@@ -424,14 +424,14 @@ def call_function():
 #------PENDIENTE_CI------
 #<name function> ::= <official function> | <customer function>
 def name_function():
-    if (verificar('move') or verificar("turnleft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end")):
+    if (verificar('move') or verificar("turnleft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end") or verificar("program")):
         #print ('obviamente entre a official fucntion')
         next_token = all_tokens[-1]
         add_code_in_ci(next_token)
 
         official_function()
     else:
-        customer_function()
+        call_customer_function()
 
 #------PENDIENTE_ARREGLAR------
 #------PENDIENTE_ARREGLAR------
@@ -439,16 +439,24 @@ def name_function():
 #------PENDIENTE_ARREGLAR------
 #------PENDIENTE_ARREGLAR------
 def customer_function():
-    '''global all_tokens
-    next_token = all_tokens[-1]
-    if (not next_token in symbol_table):
-        add_symbol_to_table(next_token)
-    add_code_in_ci(next_token)
-    print('CUSTOMER FUNCTION TOKEN {}'.format(next_token))
-    exigir_identifier()'''
     global t_symbols
-    t_symbols = {}
     next_token = all_tokens[-1]
+    if(exigir(next_token)):
+        t_symbols[next_token] = ci_count
+        print ("Tabla de simbolos:", t_symbols)
+
+def call_customer_function():
+    global t_symbols
+    next_token = all_tokens[-1]
+    if(exigir(next_token)):
+        if (next_token in t_symbols):
+            print(t_symbols)
+            print(next_token)
+            print(t_symbols[next_token])
+            add_code_in_ci("CALL")
+            add_num_in_ci(t_symbols[next_token])
+            #stack_positions.append(ci_count)
+            print ("stack", stack_positions)
 
 
 #------PENDIENTE_CI------
