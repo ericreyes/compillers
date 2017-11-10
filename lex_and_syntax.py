@@ -188,6 +188,8 @@ t_symbols = {}
 
 # all_tokens2 = all_tokens
 global karel_map_matrix
+global karel_dict
+karel_dict = {'beepers':0,'position_i':0,'position_j':0,'direction':''}
 
 
 def verificar(expected_token):
@@ -728,15 +730,17 @@ def read_board_file():
     global karel_map_matrix
     karel_map_matrix = karel_matrix
 
-    setup_board(karel_map_matrix)
+    draw_board(karel_map_matrix)
+
     return karel_matrix
 
 
 #check_lex_and_syntax()
 
 
-def setup_board(karel_map_matrix):
+def draw_board(karel_map_matrix):
     global all_squares
+    global karel_dict
 
     blank_square = QtGui.QPixmap('images/blank.png')
     wall = QtGui.QPixmap('images/wall.png')
@@ -757,20 +761,38 @@ def setup_board(karel_map_matrix):
                 square.setPixmap(blank_square)
             elif(karel_map_matrix[i][j] == 'B'):
                 square.setPixmap(wall)
-            elif(karel_map_matrix[i][j] == 'K'):
-                square.setPixmap(karel)
             elif(karel_map_matrix[i][j].isdigit()):
                 square.setPixmap(beeper)
             elif(karel_map_matrix[i][j] == 'N'):
+                karel_dict["position_i"] = i
+                karel_dict["position_j"] = j
+                karel_dict["direction"] = 'N'
                 square.setPixmap(karelN)
+                karel_map_matrix[i][j] = '-'
             elif(karel_map_matrix[i][j] == 'S'):
+                print('should fucking setPixmap')
+                karel_dict["position_i"] = i
+                karel_dict["position_j"] = j
+                karel_dict["direction"] = 'S'
                 square.setPixmap(karelS)
+                karel_map_matrix[i][j] = '-'
             elif(karel_map_matrix[i][j] == 'E'):
+                karel_dict["position_i"] = i
+                karel_dict["position_j"] = j
+                karel_dict["direction"] = 'E'
                 square.setPixmap(karelE)
+                karel_map_matrix[i][j] = '-'
             elif(karel_map_matrix[i][j] == 'W'):
+                karel_dict["position_i"] = i
+                karel_dict["position_j"] = j
+                karel_dict["direction"] = 'W'
                 square.setPixmap(karelW)
+                karel_map_matrix[i][j] = '-'
             else:
                 raise Exception('Invalid symbol in Karel File, unable to reload')
+
+    #checa el dic Karel
+    #pinta Karel en la posicion que sacamos del dic
 
 
 
@@ -794,10 +816,10 @@ class Ui_MainWindow(object):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
         MainWindow.resize(1228, 891)
 
-        self.EAST = True
-        self.NORTH = False
-        self.WEST = False
-        self.SOUTH = False
+        #self.EAST = True
+        #self.NORTH = False
+        #self.WEST = False
+        #self.SOUTH = False
 
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
@@ -1173,33 +1195,28 @@ class Ui_MainWindow(object):
         pass
 
     def move_board(self):
+        #TODO: siguiente a implementar usando el karel_dict
         global all_squares
-        if (self.NORTH == True):
+        global karel_dict
+        if (karel_dict['direction'] == 'N'):
             pass
-        elif (self.WEST == True):
+        elif (karel_dict['direction'] == 'S'):
             pass
-        elif (self.SOUTH == True):
+        elif (karel_dict['direction'] == 'E'):
             pass
-        elif (self.EAST == True):
+        elif (karel_dict['direction'] == 'W'):
             pass
 
     def turn_left_board(self):
-        if (self.NORTH == True):
-            self.NORTH = False
-            self.WEST = True
-            #Set image looking west
-        elif (self.WEST == True):
-            self.WEST = False
-            self.SOUTH = True
-            #Set image looking west
-        elif (self.SOUTH == True):
-            self.SOUTH = False
-            self.EAST = True
-            #Set image looking west
-        elif (self.EAST == True):
-            self.EAST = False
-            self.NORTH = True
-            #Set image looking west
+        if (karel_dict['direction'] == 'N'):
+            karel_dict['direction'] = 'W'
+        elif (karel_dict['direction'] == 'W'):
+            karel_dict['direction'] = 'S'
+        elif (karel_dict['direction'] == 'S'):
+            karel_dict['direction'] = 'E'
+        elif (karel_dict['direction'] == 'E'):
+            karel_dict['direction'] = 'N'
+        draw_board()
 
     def set_whole_board(self):
         pass
@@ -1248,8 +1265,7 @@ if __name__ == "__main__":
     ui.setupUi(MainWindow)
 
     karel_map_matrix = read_board_file()
-    setup_board(karel_map_matrix)
-
+    pprint.pprint(karel_map_matrix)
 
 
 
