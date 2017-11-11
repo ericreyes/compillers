@@ -696,6 +696,17 @@ def official_function():
 def number():
     exigir_numero()
 
+class MyPopup(QtGui.QWidget):
+    def __init__(self):
+        QtGui.QLabel.__init__(self)
+
+    def paintEvent(self, e):
+        dc = QPainter(self)
+        dc.drawLine(0, 0, 100, 100)
+        dc.drawLine(100, 0, 0, 100)
+
+
+
 def check_lex_and_syntax(karel_program):
     #karel_program = open('karel.txt').read()
     lexer = OurLexer()
@@ -716,77 +727,137 @@ def check_lex_and_syntax(karel_program):
     program()
 
 def read_board_file():
+    global karel_map_matrix
     print("reading from file, reload")
-    karel_matrix = [[0 for x in range(10)] for y in range(10)]
+    karel_map_matrix = [[0 for x in range(10)] for y in range(10)]
     karel_tokens = open("mapa.karel").read().split()
     karel_tokens.reverse()
 
-    for i, lista in enumerate(karel_matrix):
+    for i, lista in enumerate(karel_map_matrix):
         for j, element in enumerate(lista):
-            karel_matrix[i][j] = karel_tokens.pop()
+            karel_map_matrix[i][j] = karel_tokens.pop()
 
     # Use pretty print to print the matrix in console
-    #pprint.pprint((karel_matrix))
-    global karel_map_matrix
-    karel_map_matrix = karel_matrix
+    #pprint.pprint((karel_map_matrix))
+    draw_board()
 
-    draw_board(karel_map_matrix)
-
-    return karel_matrix
 
 
 #check_lex_and_syntax()
 
+def get_karel_position():
+    return karel_dict['position_i'], karel_dict['position_j']
+def set_karel_position(i, j):
+    karel_dict['position_i'] = i
+    karel_dict['position_j'] = j
 
-def draw_board(karel_map_matrix):
+def set_square(square, image_name):
+    if(image_name == 'blank'):
+        blank_square = QtGui.QPixmap('images/blank.png')
+        square.setPixmap(blank_square)
+    elif(image_name == 'beeper'):
+        #TODO, set beeper in the matrix
+        beeper = QtGui.QPixmap('images/beeper.png')
+        square.setPixmap(beeper)
+    elif(image_name == 'north'):
+        karelN = QtGui.QPixmap('images/karelN.png')
+        square.setPixmap(karelN)
+    elif(image_name == 'east'):
+        square.setPixmap(karelE)
+        karelE = QtGui.QPixmap('images/karelE.png')
+    elif(image_name == 'south'):
+        karelS = QtGui.QPixmap('images/karelS.png')
+        square.setPixmap(karelS)
+    elif(image_name == 'west'):
+        karelW = QtGui.QPixmap('images/karelW.png')
+        square.setPixmap(karelW)
+    elif(image_name == 'wall'):
+        wall = QtGui.QPixmap('images/wall.png')
+        square.setPixmap(wall)
+
+def move_board():
+    #TODO: siguiente a implementar usando el karel_dict
     global all_squares
     global karel_dict
+    i, j = get_karel_position()
 
-    blank_square = QtGui.QPixmap('images/blank.png')
-    wall = QtGui.QPixmap('images/wall.png')
-    karelN = QtGui.QPixmap('images/karelN.png')
-    karelS = QtGui.QPixmap('images/karelS.png')
-    karelE = QtGui.QPixmap('images/karelE.png')
-    karelW = QtGui.QPixmap('images/karelW.png')
-    beeper = QtGui.QPixmap('images/beeper.png')
+
+    #TODO: validate, leave beepers behind case
+
+    try:
+        if (karel_dict['direction'] == 'N'):
+            if (i-1 < 0):
+                raise Exception('Invalid move: Cannot play off the board')
+            if (karel_map_matrix[i-1][j] == 'B'):
+                raise Exception('Cannot move to a wall')
+
+            set_square(all_squares[i-1][j], 'north')
+            set_karel_position(i-1, j)
+
+        elif (karel_dict['direction'] == 'S'):
+            if (i+1 > 9):
+                raise Exception('Invalid move: Cannot play off the board')
+            set_square(all_squares[i+1][j], 'south')
+            set_karel_position(i+1, j)
+
+        elif (karel_dict['direction'] == 'E'):
+            if (j+1 > 9):
+                raise Exception('Invalid move: Cannot play off the board')
+            set_square(all_squares[i][j+1], 'east')
+            set_karel_position(i, j+1)
+
+        elif (karel_dict['direction'] == 'W'):
+            if (j-1 < 0):
+                raise Exception('Invalid move: Cannot play off the board')
+            set_square(all_squares[i][j-1], 'west')
+            set_karel_position(i, j-1)
+        #Karel will move
+        #MAAAAL, we need beepers logic
+        set_square(all_squares[i][j], 'blank')
+
+    except (Exception) as e:
+        print (e)
+        #Ui_MainWindow.create_error_popup()
+
+def draw_board():
+    global karel_map_matrix
+    global all_squares
+    global karel_dict
 
     # transform = QtGui.QTransform()
     # transform.rotate(-180)
     # self.pos00.setPixmap(QtGui.QPixmap('pls.png').transformed(transform))
-
-
     for i, array in enumerate(all_squares):
         for j, square in enumerate(array):
             if(karel_map_matrix[i][j] == '-'):
-                square.setPixmap(blank_square)
+                set_square(square, 'blank')
             elif(karel_map_matrix[i][j] == 'B'):
-                square.setPixmap(wall)
+                set_square(square, 'wall')
             elif(karel_map_matrix[i][j].isdigit()):
-                square.setPixmap(beeper)
+                set_square(square, 'beeper')
             elif(karel_map_matrix[i][j] == 'N'):
                 karel_dict["position_i"] = i
                 karel_dict["position_j"] = j
                 karel_dict["direction"] = 'N'
-                square.setPixmap(karelN)
+                set_square(square, 'north')
                 karel_map_matrix[i][j] = '-'
             elif(karel_map_matrix[i][j] == 'S'):
-                print('should fucking setPixmap')
                 karel_dict["position_i"] = i
                 karel_dict["position_j"] = j
                 karel_dict["direction"] = 'S'
-                square.setPixmap(karelS)
+                set_square(square, 'south')
                 karel_map_matrix[i][j] = '-'
             elif(karel_map_matrix[i][j] == 'E'):
                 karel_dict["position_i"] = i
                 karel_dict["position_j"] = j
                 karel_dict["direction"] = 'E'
-                square.setPixmap(karelE)
+                set_square(square, 'east')
                 karel_map_matrix[i][j] = '-'
             elif(karel_map_matrix[i][j] == 'W'):
                 karel_dict["position_i"] = i
                 karel_dict["position_j"] = j
                 karel_dict["direction"] = 'W'
-                square.setPixmap(karelW)
+                set_square(square, 'west')
                 karel_map_matrix[i][j] = '-'
             else:
                 raise Exception('Invalid symbol in Karel File, unable to reload')
@@ -1187,25 +1258,17 @@ class Ui_MainWindow(object):
         global all_squares
         all_squares = [ [self.pos00, self.pos01, self.pos02, self.pos03, self.pos04, self.pos05, self.pos06, self.pos07, self.pos08, self.pos09], [self.pos10, self.pos11, self.pos12, self.pos13, self.pos14, self.pos15, self.pos16, self.pos17, self.pos18, self.pos19], [self.pos20, self.pos21, self.pos22, self.pos23, self.pos24, self.pos25, self.pos26, self.pos27, self.pos28, self.pos29] , [self.pos30, self.pos31, self.pos32, self.pos33, self.pos34, self.pos35, self.pos36, self.pos37, self.pos38, self.pos39], [self.pos40, self.pos41, self.pos42, self.pos43, self.pos44, self.pos45, self.pos46, self.pos47, self.pos48, self.pos49], [self.pos50, self.pos51, self.pos52, self.pos53, self.pos54, self.pos55, self.pos56, self.pos57, self.pos58, self.pos59] ,[self.pos60, self.pos61, self.pos62, self.pos63, self.pos64, self.pos65, self.pos66, self.pos67, self.pos68, self.pos69] , [self.pos70, self.pos71, self.pos72, self.pos73, self.pos74, self.pos75, self.pos76, self.pos77, self.pos78, self.pos79], [self.pos80, self.pos81, self.pos82, self.pos83, self.pos84, self.pos85, self.pos86, self.pos87, self.pos88, self.pos89], [self.pos90, self.pos91, self.pos92, self.pos93, self.pos94, self.pos95, self.pos96, self.pos97, self.pos98, self.pos99]]
 
+    def create_error_popup(self):
+        self.w = MyPopup()
+        self.w.setGeometry(QtGui.QLabel(100, 100, 400, 200))
+        self.w.setText(_translate("MainWindow", "INVALID MOVE", None))
+        self.w.show()
 
     def set_walls(self):
         pass
 
     def set_karel(self):
         pass
-
-    def move_board(self):
-        #TODO: siguiente a implementar usando el karel_dict
-        global all_squares
-        global karel_dict
-        if (karel_dict['direction'] == 'N'):
-            pass
-        elif (karel_dict['direction'] == 'S'):
-            pass
-        elif (karel_dict['direction'] == 'E'):
-            pass
-        elif (karel_dict['direction'] == 'W'):
-            pass
 
     def turn_left_board(self):
         if (karel_dict['direction'] == 'N'):
@@ -1239,7 +1302,7 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
         self.textEdit.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
             "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
-            "p, li { white-space: pre-wrap; }\n"
+            "p, li { white-space: pre-wrap; font-size: 30px; }\n"
             "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:15pt; font-weight:400; font-style:normal;\">\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">class program {</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">    program() {</span></p>\n"
@@ -1257,6 +1320,7 @@ class Ui_MainWindow(object):
 
 
 if __name__ == "__main__":
+    global karel_map_matrix
     import sys
     app = QtGui.QApplication(sys.argv)
     MainWindow = QtGui.QMainWindow()
@@ -1264,8 +1328,9 @@ if __name__ == "__main__":
 
     ui.setupUi(MainWindow)
 
-    karel_map_matrix = read_board_file()
+    read_board_file()
     pprint.pprint(karel_map_matrix)
+
 
 
 
