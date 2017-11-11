@@ -1216,7 +1216,7 @@ class Ui_MainWindow(object):
         font.setPointSize(12)
         self.reload_board.setFont(font)
         self.reload_board.setObjectName(_fromUtf8("reload_board"))
-        self.reload_board.clicked.connect(read_board_file) #move_board
+        self.reload_board.clicked.connect(read_board_file) #move_board read_board_file
         self.gridLayout_7.addWidget(self.reload_board, 2, 1, 1, 1)
         self.execute_code = QtGui.QPushButton(self.gridLayoutWidget)
         font = QtGui.QFont()
