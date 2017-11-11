@@ -844,6 +844,11 @@ def turn_left_board():
         karel_dict['direction'] = 'N'
         set_square(all_squares[i][j] ,'north')
 
+def pick_beeper_board():
+    pass
+
+def drop_beeper_board():
+    pass
 
 def draw_board():
     global karel_map_matrix
@@ -1290,16 +1295,8 @@ class Ui_MainWindow(object):
         self.w.setText(_translate("MainWindow", "INVALID MOVE", None))
         self.w.show()
 
-    def set_walls(self):
-        pass
-
-    def set_karel(self):
-        pass
-
-    def set_whole_board(self):
-        pass
-    #switch ()?
     def execute_code_from_board(self):
+        # Reset our CI and its counter
         global ci_count
         ci_count = 0
         global ci_list
