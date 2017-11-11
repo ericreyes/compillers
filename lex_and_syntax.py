@@ -789,7 +789,7 @@ def move_board():
             if (i-1 < 0):
                 raise Exception('Invalid move: Cannot play off the board')
             if (karel_map_matrix[i-1][j] == 'B'):
-                raise Exception('Cannot move to a wall')
+                raise Exception('Invalid move: Cannot move to a wall')
 
             set_square(all_squares[i-1][j], 'north')
             set_karel_position(i-1, j)
