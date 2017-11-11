@@ -752,19 +752,27 @@ def set_karel_position(i, j):
     karel_dict['position_j'] = j
 
 def set_square(square, image_name):
+    global karel_map_matrix
+
     if(image_name == 'blank'):
         blank_square = QtGui.QPixmap('images/blank.png')
         square.setPixmap(blank_square)
     elif(image_name == 'beeper'):
-        #TODO, set beeper in the matrix
+        #TODO, set a number in the image, to know how many beepers are there
+        # i, j = get_karel_position()
+        # if (karel_map_matrix[i][j] == '-')
+        #     karel_map_matrix[i][j] = 1
+        # else:
+        #     karel_map_matrix[i][j] = int(karel_map_matrix[i][j]) + 1
         beeper = QtGui.QPixmap('images/beeper.png')
         square.setPixmap(beeper)
+
     elif(image_name == 'north'):
         karelN = QtGui.QPixmap('images/karelN.png')
         square.setPixmap(karelN)
     elif(image_name == 'east'):
-        square.setPixmap(karelE)
         karelE = QtGui.QPixmap('images/karelE.png')
+        square.setPixmap(karelE)
     elif(image_name == 'south'):
         karelS = QtGui.QPixmap('images/karelS.png')
         square.setPixmap(karelS)
@@ -776,7 +784,6 @@ def set_square(square, image_name):
         square.setPixmap(wall)
 
 def move_board():
-    #TODO: siguiente a implementar usando el karel_dict
     global all_squares
     global karel_dict
     i, j = get_karel_position()
@@ -818,6 +825,25 @@ def move_board():
     except (Exception) as e:
         print (e)
         #Ui_MainWindow.create_error_popup()
+
+def turn_left_board():
+    global karel_dict
+    global all_squares
+    i, j = get_karel_position()
+
+    if (karel_dict['direction'] == 'N'):
+        karel_dict['direction'] = 'W'
+        set_square(all_squares[i][j] ,'west')
+    elif (karel_dict['direction'] == 'W'):
+        karel_dict['direction'] = 'S'
+        set_square(all_squares[i][j] ,'south')
+    elif (karel_dict['direction'] == 'S'):
+        karel_dict['direction'] = 'E'
+        set_square(all_squares[i][j] ,'east')
+    elif (karel_dict['direction'] == 'E'):
+        karel_dict['direction'] = 'N'
+        set_square(all_squares[i][j] ,'north')
+
 
 def draw_board():
     global karel_map_matrix
@@ -1216,7 +1242,7 @@ class Ui_MainWindow(object):
         font.setPointSize(12)
         self.reload_board.setFont(font)
         self.reload_board.setObjectName(_fromUtf8("reload_board"))
-        self.reload_board.clicked.connect(read_board_file) #move_board read_board_file
+        self.reload_board.clicked.connect(read_board_file) #move_board read_board_file turn_left_board
         self.gridLayout_7.addWidget(self.reload_board, 2, 1, 1, 1)
         self.execute_code = QtGui.QPushButton(self.gridLayoutWidget)
         font = QtGui.QFont()
@@ -1269,17 +1295,6 @@ class Ui_MainWindow(object):
 
     def set_karel(self):
         pass
-
-    def turn_left_board(self):
-        if (karel_dict['direction'] == 'N'):
-            karel_dict['direction'] = 'W'
-        elif (karel_dict['direction'] == 'W'):
-            karel_dict['direction'] = 'S'
-        elif (karel_dict['direction'] == 'S'):
-            karel_dict['direction'] = 'E'
-        elif (karel_dict['direction'] == 'E'):
-            karel_dict['direction'] = 'N'
-        draw_board()
 
     def set_whole_board(self):
         pass
