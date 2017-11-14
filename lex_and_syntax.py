@@ -149,8 +149,8 @@ class OurLexer(object):
       #official functions
       'move': 9001,
       'turnleft': 9002,
-      'putBeeper': 9003,
-      'pickBeeper': 9004,
+      'putbeeper': 9003,
+      'pickbeeper': 9004,
       'end': 9005,
       #conditionals
       'front-is-clear': 8001,
@@ -393,7 +393,7 @@ def body():
 def body_prima():
     #print ('entra a body prima ')
 
-    if (verificar("if") or verificar("while") or verificar("iterate") or verificar('move') or verificar("turnleft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end") or verificar_identifier()):
+    if (verificar("if") or verificar("while") or verificar("iterate") or verificar('move') or verificar("turnleft") or verificar("pickbeeper") or verificar("putbeeper") or verificar("end") or verificar_identifier()):
         expression()
         body_prima()
     # else lambda
@@ -430,7 +430,7 @@ def call_function():
 #------PENDIENTE_CI------
 #<name function> ::= <official function> | <customer function>
 def name_function():
-    if (verificar('move') or verificar("turnleft") or verificar("pickBeeper") or verificar("putBeeper") or verificar("end") or verificar("program")):
+    if (verificar('move') or verificar("turnleft") or verificar("pickbeeper") or verificar("putbeeper") or verificar("end") or verificar("program")):
         #print ('obviamente entre a official fucntion')
         next_token = all_tokens[-1]
         add_code_in_ci(next_token)
@@ -679,7 +679,7 @@ def condition():
     add_code_in_ci(next_token)
 
 #------PENDIENTE_CI------
-#<official function> ::= "move" | "turnleft" | "pickBeeper" | "putBeeper" | "end"
+#<official function> ::= "move" | "turnleft" | "pickbeeper" | "putbeeper" | "end"
 def official_function():
     #print ('official FUNCTIOOOOOOOOOOON')
     if (verificar("move")):
@@ -687,10 +687,10 @@ def official_function():
         exigir("move")
     elif (verificar("turnleft")):
         exigir("turnleft")
-    elif (verificar("pickBeeper")):
-        exigir("pickBeeper")
-    elif (verificar("putBeeper")):
-        exigir("putBeeper")
+    elif (verificar("pickbeeper")):
+        exigir("pickbeeper")
+    elif (verificar("putbeeper")):
+        exigir("putbeeper")
     elif (verificar("end")):
         exigir("end")
     else:
@@ -807,11 +807,6 @@ def set_square(square, image_name):
         # elif(karel_map_matrix[i][j].isdigit()):
         #     karel_map_matrix[i][j] = str(int(karel_map_matrix[i][j]) + 1)
 
-def pick_beeper_board():
-    pass
-
-def drop_beeper_board():
-    pass
 
 def draw_board():
     global karel_map_matrix
@@ -909,7 +904,7 @@ def move_board():
                 set_square(all_squares[i][j-1], 'west')
             set_karel_position(i, j-1)
 
-        #print(karel_map_matrix[i][j], 'lo que dejo atras')
+        print(karel_map_matrix[i][j], 'lo que dejo atras')
 
         if (karel_map_matrix[i][j] == '-'):
             set_square(all_squares[i][j], 'blank')
@@ -918,6 +913,7 @@ def move_board():
 
     except (Exception) as e:
         print (e)
+        #TODO, implement pop up crash window (with reload button, same as the button we already have)
         #Ui_MainWindow.create_error_popup()
     time.sleep(1)
 
@@ -950,9 +946,56 @@ def turn_left_board():
     time.sleep(1)
 
 def put_beeper_board():
+    print('executing putbeeper')
+    global all_squares
+    global karel_map_matrix
+
+    i, j = get_karel_position()
+
+    try:
+        if (int(karel_dict['beepers']) >= 1):
+            if(karel_map_matrix[i][j].isdigit()):
+                new_beepers = int(karel_dict['beepers']) - 1
+                karel_dict['beepers'] = str(new_beepers)
+                pos_beepers = int(karel_map_matrix[i][j]) + 1
+                karel_map_matrix[i][j] = str(pos_beepers)
+            else:
+                karel_map_matrix[i][j] = '1'
+            #Dejar un beeper no matter what
+            set_square(all_squares[i][j], karel_dict['direction'] +'B')  #El + 'B' para poner la imagen ROJA
+        else:
+            raise Exception('No beepers to put!')
+
+    except Exception as e:
+        print (e)
+        #TODO, implement same pop up error message
+
     time.sleep(1)
 
 def pick_beeper_board():
+    print ('executing pickbeeper')
+    global all_squares
+    global karel_map_matrix
+
+    try:
+        i, j = get_karel_position()
+        if(karel_map_matrix[i][j].isdigit()):
+            pos_beepers = int(karel_map_matrix[i][j]) - 1
+            karel_map_matrix[i][j] = str(pos_beepers)
+
+            new_beepers = int(karel_dict['beepers']) + 1
+            karel_dict['beepers'] = str(new_beepers)
+
+            if (karel_map_matrix[i][j] == '0'):
+                karel_map_matrix[i][j] = '-'
+                set_square(all_squares[i][j], karel_dict['direction'])
+
+        else:
+            raise Exception('No beepers to pick !')
+    except Exception as e:
+        #TODO, implement same pop up error message
+        print (e)
+
     time.sleep(1)
 
 def if_condition_board():
@@ -1049,7 +1092,7 @@ def execute_semantic():
         QtGui.QApplication.processEvents() ##TODO WHAT THE FUCK
 
         #Paso fancy para ejecutar todas las funciones acorde al codigo intermedio
-        semantic_functions[str(ci_list[position])]()
+        semantic_functions[ci_list[position]]()
         position = position + 1
 
 
@@ -1085,35 +1128,35 @@ def execute_semantic():
 
 global semantic_functions
 semantic_functions = {
-    "9001": move_board,
-    "9002": turn_left_board,
-    "9003": put_beeper_board,
-    "9004": pick_beeper_board,
-    "510": if_condition_board,
-    "520": iterate_condition_board,
-    "530": JMP_board,
-    "540": RET_board,
-    "550": while_condition_board,
-    "600": CALL_board,
-    "8001": front_is_clear_board,
-    "8002": left_is_clear_board,
-    "8003": right_is_clear_board,
-    "8004": front_is_blocked_board,
-    "8005": left_is_blocked_board,
-    "8006": right_is_blocked_board,
-    "8007": next_to_a_beeper_board,
-    "8008": not_next_to_a_beeper_board,
-    "8009": facing_north_board,
-    "8010": facing_south_board,
-    "8011": facing_east_board,
-    "8012": facing_west_board,
-    "8013": not_facing_north_board,
-    "8014": not_facing_south_board,
-    "8015": not_facing_east_board,
-    "8016": not_facing_west_board,
-    "8017": any_beepers_in_beeper_bag_board,
-    "8018": no_beepers_in_beeper_bag_board,
-    '1000': program_board,
+    9001: move_board,
+    9002: turn_left_board,
+    9003: put_beeper_board,
+    9004: pick_beeper_board,
+    510: if_condition_board,
+    520: iterate_condition_board,
+    530: JMP_board,
+    540: RET_board,
+    550: while_condition_board,
+    600: CALL_board,
+    8001: front_is_clear_board,
+    8002: left_is_clear_board,
+    8003: right_is_clear_board,
+    8004: front_is_blocked_board,
+    8005: left_is_blocked_board,
+    8006: right_is_blocked_board,
+    8007: next_to_a_beeper_board,
+    8008: not_next_to_a_beeper_board,
+    8009: facing_north_board,
+    8010: facing_south_board,
+    8011: facing_east_board,
+    8012: facing_west_board,
+    8013: not_facing_north_board,
+    8014: not_facing_south_board,
+    8015: not_facing_east_board,
+    8016: not_facing_west_board,
+    8017: any_beepers_in_beeper_bag_board,
+    8018: no_beepers_in_beeper_bag_board,
+    1000: program_board,
 }
 
 
@@ -1540,8 +1583,10 @@ class Ui_MainWindow(object):
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">    program() {</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        pickbeeper()</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        turnleft()</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        putbeeper()</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        turnleft()</span></p>\n"
