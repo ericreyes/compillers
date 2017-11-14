@@ -745,11 +745,9 @@ def read_board_file():
     draw_board()
 
 
-
-#check_lex_and_syntax()
-
 def get_karel_position():
     return karel_dict['position_i'], karel_dict['position_j']
+
 def set_karel_position(i, j):
     karel_dict['position_i'] = i
     karel_dict['position_j'] = j
@@ -764,32 +762,43 @@ def set_square(square, image_name):
     elif(image_name == 'north'):
         karelN = QtGui.QPixmap('images/karelN.png')
         square.setPixmap(karelN)
+
     elif(image_name == 'east'):
         karelE = QtGui.QPixmap('images/karelE.png')
         square.setPixmap(karelE)
+
     elif(image_name == 'south'):
         karelS = QtGui.QPixmap('images/karelS.png')
         square.setPixmap(karelS)
+
     elif(image_name == 'west'):
         karelW = QtGui.QPixmap('images/karelW.png')
+        square.setPixmap(karelW)
+
     elif(image_name == 'northB'):
         karelN = QtGui.QPixmap('images/karelNB.png')
         square.setPixmap(karelN)
+
     elif(image_name == 'eastB'):
         karelE = QtGui.QPixmap('images/karelEB.png')
         square.setPixmap(karelE)
+
     elif(image_name == 'southB'):
         karelS = QtGui.QPixmap('images/karelSB.png')
         square.setPixmap(karelS)
+
     elif(image_name == 'westB'):
         karelW = QtGui.QPixmap('images/karelWB.png')
         square.setPixmap(karelW)
+
     elif(image_name == 'wall'):
         wall = QtGui.QPixmap('images/wall.png')
         square.setPixmap(wall)
+
     elif(image_name == 'beeper'):
         beeper = QtGui.QPixmap('images/beeper.png')
         square.setPixmap(beeper)
+
 
         # #TODO, set a number in the image, to know how many beepers are there
         # i, j = get_karel_position()
@@ -848,22 +857,11 @@ def draw_board():
     #pinta Karel en la posicion que sacamos del dic
 
 
-def redraw():
-    global all_squares
-    global karel_dict
-
-    i,j = get_karel_position()
-    direction = karel_dict['direction']
-
-    draw_board()
-    set_square(all_squares[i][j], direction)
-
-
-
 def move_board():
     global all_squares
     global karel_dict
     print('executing move')
+
     i, j = get_karel_position()
 
     try:
@@ -911,7 +909,8 @@ def move_board():
                 set_square(all_squares[i][j-1], 'west')
             set_karel_position(i, j-1)
 
-        print(karel_map_matrix[i][j], 'lo que dejo atras')
+        #print(karel_map_matrix[i][j], 'lo que dejo atras')
+
         if (karel_map_matrix[i][j] == '-'):
             set_square(all_squares[i][j], 'blank')
         elif (karel_map_matrix[i][j].isdigit()):
@@ -920,32 +919,41 @@ def move_board():
     except (Exception) as e:
         print (e)
         #Ui_MainWindow.create_error_popup()
+    time.sleep(1)
+
+
+
 
 def turn_left_board():
     global karel_dict
     global all_squares
+    beepers = ''
+
+
     print('executing turnleft')
     i, j = get_karel_position()
 
+    if (karel_map_matrix[i][j].isdigit()):
+        beepers = 'B'
     if (karel_dict['direction'] == 'north'):
         karel_dict['direction'] = 'west'
-        set_square(all_squares[i][j] ,'west')
+        set_square(all_squares[i][j] ,'west' + beepers)
     elif (karel_dict['direction'] == 'west'):
         karel_dict['direction'] = 'south'
-        set_square(all_squares[i][j] ,'south')
+        set_square(all_squares[i][j] ,'south' + beepers)
     elif (karel_dict['direction'] == 'south'):
         karel_dict['direction'] = 'east'
-        set_square(all_squares[i][j] ,'east')
+        set_square(all_squares[i][j] ,'east' + beepers)
     elif (karel_dict['direction'] == 'east'):
         karel_dict['direction'] = 'north'
-        set_square(all_squares[i][j] ,'north')
-
+        set_square(all_squares[i][j] ,'north' + beepers)
+    time.sleep(1)
 
 def put_beeper_board():
-    pass
+    time.sleep(1)
 
 def pick_beeper_board():
-    pass
+    time.sleep(1)
 
 def if_condition_board():
     pass
@@ -973,6 +981,7 @@ def CALL_board():
     pass
 
 def front_is_clear_board():
+
     pass
 
 def left_is_clear_board():
@@ -1036,14 +1045,17 @@ def execute_semantic():
     position = 0
 
     while(ci_list[position] != 9005):
+
+        QtGui.QApplication.processEvents() ##TODO WHAT THE FUCK
+
+        #Paso fancy para ejecutar todas las funciones acorde al codigo intermedio
         semantic_functions[str(ci_list[position])]()
         position = position + 1
+
+
         # if(ci_list[position] == 9001):
         #     print('executing move')
         #     move_board()
-
-        #     i, j = get_karel_position()
-        #     set_square(all_squares[i][j],'southB')
 
         # elif(ci_list[position] == 9002):
         #     print('executing turnleft')
