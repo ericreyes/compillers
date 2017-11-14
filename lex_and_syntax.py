@@ -1,6 +1,8 @@
 import ply.lex as lex
 import pprint as pprint
 from PyQt4 import QtCore, QtGui
+import time
+import threading
 
 class OurLexer(object):
     # List of token names.     This is always required
@@ -169,6 +171,7 @@ class OurLexer(object):
       'not-facing-west': 8016,
       'any-beepers-in-beeper-bag': 8017,
       'no-beepers-in-beeper-bag': 8018,
+
     }
 
 global t_symbols
@@ -458,7 +461,7 @@ def call_customer_function():
             print(t_symbols[next_token])
             add_code_in_ci("CALL")
             add_num_in_ci(t_symbols[next_token])
-            #stack_positions.append(ci_count)
+            stack_positions.append(ci_count)
             print ("stack", stack_positions)
 
 
@@ -757,15 +760,6 @@ def set_square(square, image_name):
     if(image_name == 'blank'):
         blank_square = QtGui.QPixmap('images/blank.png')
         square.setPixmap(blank_square)
-    elif(image_name == 'beeper'):
-        #TODO, set a number in the image, to know how many beepers are there
-        # i, j = get_karel_position()
-        # if (karel_map_matrix[i][j] == '-')
-        #     karel_map_matrix[i][j] = 1
-        # else:
-        #     karel_map_matrix[i][j] = int(karel_map_matrix[i][j]) + 1
-        beeper = QtGui.QPixmap('images/beeper.png')
-        square.setPixmap(beeper)
 
     elif(image_name == 'north'):
         karelN = QtGui.QPixmap('images/karelN.png')
@@ -778,71 +772,31 @@ def set_square(square, image_name):
         square.setPixmap(karelS)
     elif(image_name == 'west'):
         karelW = QtGui.QPixmap('images/karelW.png')
+    elif(image_name == 'northB'):
+        karelN = QtGui.QPixmap('images/karelNB.png')
+        square.setPixmap(karelN)
+    elif(image_name == 'eastB'):
+        karelE = QtGui.QPixmap('images/karelEB.png')
+        square.setPixmap(karelE)
+    elif(image_name == 'southB'):
+        karelS = QtGui.QPixmap('images/karelSB.png')
+        square.setPixmap(karelS)
+    elif(image_name == 'westB'):
+        karelW = QtGui.QPixmap('images/karelWB.png')
         square.setPixmap(karelW)
     elif(image_name == 'wall'):
         wall = QtGui.QPixmap('images/wall.png')
         square.setPixmap(wall)
+    elif(image_name == 'beeper'):
+        beeper = QtGui.QPixmap('images/beeper.png')
+        square.setPixmap(beeper)
 
-def move_board():
-    global all_squares
-    global karel_dict
-    i, j = get_karel_position()
-
-
-    #TODO: validate, leave beepers behind case
-
-    try:
-        if (karel_dict['direction'] == 'N'):
-            if (i-1 < 0):
-                raise Exception('Invalid move: Cannot play off the board')
-            if (karel_map_matrix[i-1][j] == 'B'):
-                raise Exception('Invalid move: Cannot move to a wall')
-
-            set_square(all_squares[i-1][j], 'north')
-            set_karel_position(i-1, j)
-
-        elif (karel_dict['direction'] == 'S'):
-            if (i+1 > 9):
-                raise Exception('Invalid move: Cannot play off the board')
-            set_square(all_squares[i+1][j], 'south')
-            set_karel_position(i+1, j)
-
-        elif (karel_dict['direction'] == 'E'):
-            if (j+1 > 9):
-                raise Exception('Invalid move: Cannot play off the board')
-            set_square(all_squares[i][j+1], 'east')
-            set_karel_position(i, j+1)
-
-        elif (karel_dict['direction'] == 'W'):
-            if (j-1 < 0):
-                raise Exception('Invalid move: Cannot play off the board')
-            set_square(all_squares[i][j-1], 'west')
-            set_karel_position(i, j-1)
-        #Karel will move
-        #MAAAAL, we need beepers logic
-        set_square(all_squares[i][j], 'blank')
-
-    except (Exception) as e:
-        print (e)
-        #Ui_MainWindow.create_error_popup()
-
-def turn_left_board():
-    global karel_dict
-    global all_squares
-    i, j = get_karel_position()
-
-    if (karel_dict['direction'] == 'N'):
-        karel_dict['direction'] = 'W'
-        set_square(all_squares[i][j] ,'west')
-    elif (karel_dict['direction'] == 'W'):
-        karel_dict['direction'] = 'S'
-        set_square(all_squares[i][j] ,'south')
-    elif (karel_dict['direction'] == 'S'):
-        karel_dict['direction'] = 'E'
-        set_square(all_squares[i][j] ,'east')
-    elif (karel_dict['direction'] == 'E'):
-        karel_dict['direction'] = 'N'
-        set_square(all_squares[i][j] ,'north')
+        # #TODO, set a number in the image, to know how many beepers are there
+        # i, j = get_karel_position()
+        # if (karel_map_matrix[i][j] == '-'):
+        #     karel_map_matrix[i][j] = '1'
+        # elif(karel_map_matrix[i][j].isdigit()):
+        #     karel_map_matrix[i][j] = str(int(karel_map_matrix[i][j]) + 1)
 
 def pick_beeper_board():
     pass
@@ -855,9 +809,6 @@ def draw_board():
     global all_squares
     global karel_dict
 
-    # transform = QtGui.QTransform()
-    # transform.rotate(-180)
-    # self.pos00.setPixmap(QtGui.QPixmap('pls.png').transformed(transform))
     for i, array in enumerate(all_squares):
         for j, square in enumerate(array):
             if(karel_map_matrix[i][j] == '-'):
@@ -869,34 +820,289 @@ def draw_board():
             elif(karel_map_matrix[i][j] == 'N'):
                 karel_dict["position_i"] = i
                 karel_dict["position_j"] = j
-                karel_dict["direction"] = 'N'
+                karel_dict["direction"] = 'north'
                 set_square(square, 'north')
                 karel_map_matrix[i][j] = '-'
             elif(karel_map_matrix[i][j] == 'S'):
                 karel_dict["position_i"] = i
                 karel_dict["position_j"] = j
-                karel_dict["direction"] = 'S'
+                karel_dict["direction"] = 'south'
                 set_square(square, 'south')
                 karel_map_matrix[i][j] = '-'
             elif(karel_map_matrix[i][j] == 'E'):
                 karel_dict["position_i"] = i
                 karel_dict["position_j"] = j
-                karel_dict["direction"] = 'E'
+                karel_dict["direction"] = 'east'
                 set_square(square, 'east')
                 karel_map_matrix[i][j] = '-'
             elif(karel_map_matrix[i][j] == 'W'):
                 karel_dict["position_i"] = i
                 karel_dict["position_j"] = j
-                karel_dict["direction"] = 'W'
+                karel_dict["direction"] = 'west'
                 set_square(square, 'west')
                 karel_map_matrix[i][j] = '-'
             else:
-                raise Exception('Invalid symbol in Karel File, unable to reload')
+                raise Exception('Invalid symbol in Karel File, unable to load')
 
     #checa el dic Karel
     #pinta Karel en la posicion que sacamos del dic
 
 
+def redraw():
+    global all_squares
+    global karel_dict
+
+    i,j = get_karel_position()
+    direction = karel_dict['direction']
+
+    draw_board()
+    set_square(all_squares[i][j], direction)
+
+
+
+def move_board():
+    global all_squares
+    global karel_dict
+    print('executing move')
+    i, j = get_karel_position()
+
+    try:
+        if (karel_dict['direction'] == 'north'):
+            if (i-1 < 0):
+                raise Exception('Invalid move: Cannot play off the board')
+            if (karel_map_matrix[i-1][j] == 'B'):
+                raise Exception('Invalid move: Cannot move to a wall')
+            if(karel_map_matrix[i-1][j].isdigit()):
+                set_square(all_squares[i-1][j], 'northB')
+            else:
+                set_square(all_squares[i-1][j], 'north')
+            set_karel_position(i-1, j)
+
+        elif (karel_dict['direction'] == 'south'):
+            if (i+1 > 9):
+                raise Exception('Invalid move: Cannot play off the board')
+            if (karel_map_matrix[i+1][j] == 'B'):
+                raise Exception('Invalid move: Cannot move to a wall')
+            if(karel_map_matrix[i+1][j].isdigit()):
+                set_square(all_squares[i+1][j], 'southB')
+            else:
+                set_square(all_squares[i+1][j], 'south')
+            set_karel_position(i+1, j)
+
+        elif (karel_dict['direction'] == 'east'):
+            if (j+1 > 9):
+                raise Exception('Invalid move: Cannot play off the board')
+            if (karel_map_matrix[i][j+1] == 'B'):
+                raise Exception('Invalid move: Cannot move to a wall')
+            if(karel_map_matrix[i][j+1].isdigit()):
+                set_square(all_squares[i][j+1], 'eastB')
+            else:
+                set_square(all_squares[i][j+1], 'east')
+            set_karel_position(i, j+1)
+
+        elif (karel_dict['direction'] == 'west'):
+            if (j-1 < 0):
+                raise Exception('Invalid move: Cannot play off the board')
+            if (karel_map_matrix[i][j-1] == 'B'):
+                raise Exception('Invalid move: Cannot move to a wall')
+            if(karel_map_matrix[i][j-1].isdigit()):
+                set_square(all_squares[i][j-1], 'westB')
+            else:
+                set_square(all_squares[i][j-1], 'west')
+            set_karel_position(i, j-1)
+
+        print(karel_map_matrix[i][j], 'lo que dejo atras')
+        if (karel_map_matrix[i][j] == '-'):
+            set_square(all_squares[i][j], 'blank')
+        elif (karel_map_matrix[i][j].isdigit()):
+            set_square(all_squares[i][j], 'beeper')
+
+    except (Exception) as e:
+        print (e)
+        #Ui_MainWindow.create_error_popup()
+
+def turn_left_board():
+    global karel_dict
+    global all_squares
+    print('executing turnleft')
+    i, j = get_karel_position()
+
+    if (karel_dict['direction'] == 'north'):
+        karel_dict['direction'] = 'west'
+        set_square(all_squares[i][j] ,'west')
+    elif (karel_dict['direction'] == 'west'):
+        karel_dict['direction'] = 'south'
+        set_square(all_squares[i][j] ,'south')
+    elif (karel_dict['direction'] == 'south'):
+        karel_dict['direction'] = 'east'
+        set_square(all_squares[i][j] ,'east')
+    elif (karel_dict['direction'] == 'east'):
+        karel_dict['direction'] = 'north'
+        set_square(all_squares[i][j] ,'north')
+
+
+def put_beeper_board():
+    pass
+
+def pick_beeper_board():
+    pass
+
+def if_condition_board():
+    pass
+
+def iterate_condition_board():
+    pass
+
+def JMP_board():
+    #TODO: Revisit jump to see if it's right
+    global ci_list
+    global position
+    print("Esta posicion", ci_list[position])
+    print("La de adelante", ci_list[position + 1])
+    nombre = ci_list[position + 1]
+    position = position + 1
+    print(nombre, 'nombre')
+
+def RET_board():
+    pass
+
+def while_condition_board():
+    pass
+
+def CALL_board():
+    pass
+
+def front_is_clear_board():
+    pass
+
+def left_is_clear_board():
+    pass
+
+def right_is_clear_board():
+    pass
+
+def front_is_blocked_board():
+    pass
+
+def left_is_blocked_board():
+    pass
+
+def right_is_blocked_board():
+    pass
+
+def next_to_a_beeper_board():
+    pass
+
+def not_next_to_a_beeper_board():
+    pass
+
+def facing_north_board():
+    pass
+
+def facing_south_board():
+    pass
+
+def facing_east_board():
+    pass
+
+def facing_west_board():
+    pass
+
+def not_facing_north_board():
+    pass
+
+def not_facing_south_board():
+    pass
+
+def not_facing_east_board():
+    pass
+
+def not_facing_west_board():
+    pass
+
+def any_beepers_in_beeper_bag_board():
+    pass
+
+def no_beepers_in_beeper_bag_board():
+    pass
+
+def program_board():
+    print('executing program')
+
+def execute_semantic():
+    global semantic_functions
+    global ci_list
+    global position
+    position = 0
+
+    while(ci_list[position] != 9005):
+        semantic_functions[str(ci_list[position])]()
+        position = position + 1
+        # if(ci_list[position] == 9001):
+        #     print('executing move')
+        #     move_board()
+
+        #     i, j = get_karel_position()
+        #     set_square(all_squares[i][j],'southB')
+
+        # elif(ci_list[position] == 9002):
+        #     print('executing turnleft')
+        #     turn_left_board()
+
+        # elif(ci_list[position] == 9003):
+        #     pass
+        #     #ejecutar codigo de putbeeper
+        # elif(ci_list[position] == 9004):
+        #     pass
+        #     #ejecutar codigo de pickbeeper
+        # elif(ci_list[position] == 510 or ci_list[position] == 520 or ci_list[position] == 550):
+        #     print("condicional")
+        #     if (ci_list[position + 1] is True):
+        #         pass
+        # elif(ci_list[position] == 530 or ci_list[position] == 600):
+        #     print("Esta posicion", ci_list[position])
+        #     print("La de adelante", ci_list[position + 1])
+        #     nombre = ci_list[position + 1]
+        #     #position = position - 1
+        #     print("Que pedo")
+        # elif(ci_list[position] == 540):
+        #     print ("staaaaaack", stack_positions)
+        #     #position =
+        # position = position + 1
+
+
+global semantic_functions
+semantic_functions = {
+    "9001": move_board,
+    "9002": turn_left_board,
+    "9003": put_beeper_board,
+    "9004": pick_beeper_board,
+    "510": if_condition_board,
+    "520": iterate_condition_board,
+    "530": JMP_board,
+    "540": RET_board,
+    "550": while_condition_board,
+    "600": CALL_board,
+    "8001": front_is_clear_board,
+    "8002": left_is_clear_board,
+    "8003": right_is_clear_board,
+    "8004": front_is_blocked_board,
+    "8005": left_is_blocked_board,
+    "8006": right_is_blocked_board,
+    "8007": next_to_a_beeper_board,
+    "8008": not_next_to_a_beeper_board,
+    "8009": facing_north_board,
+    "8010": facing_south_board,
+    "8011": facing_east_board,
+    "8012": facing_west_board,
+    "8013": not_facing_north_board,
+    "8014": not_facing_south_board,
+    "8015": not_facing_east_board,
+    "8016": not_facing_west_board,
+    "8017": any_beepers_in_beeper_bag_board,
+    "8018": no_beepers_in_beeper_bag_board,
+    '1000': program_board,
+}
 
 
 try:
@@ -1255,7 +1461,7 @@ class Ui_MainWindow(object):
         self.execute_code.setFont(font)
         self.execute_code.setObjectName(_fromUtf8("execute_code"))
         self.gridLayout_7.addWidget(self.execute_code, 2, 0, 1, 1)
-        self.execute_code.clicked.connect(self.execute_code_from_board)
+        self.execute_code.clicked.connect(self.execute_code_from_board) # drop_beeper_board  pick_beeper_board
         self.label = QtGui.QLabel(self.gridLayoutWidget)
         font = QtGui.QFont()
         font.setPointSize(12)
@@ -1285,7 +1491,6 @@ class Ui_MainWindow(object):
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-
         global all_squares
         all_squares = [ [self.pos00, self.pos01, self.pos02, self.pos03, self.pos04, self.pos05, self.pos06, self.pos07, self.pos08, self.pos09], [self.pos10, self.pos11, self.pos12, self.pos13, self.pos14, self.pos15, self.pos16, self.pos17, self.pos18, self.pos19], [self.pos20, self.pos21, self.pos22, self.pos23, self.pos24, self.pos25, self.pos26, self.pos27, self.pos28, self.pos29] , [self.pos30, self.pos31, self.pos32, self.pos33, self.pos34, self.pos35, self.pos36, self.pos37, self.pos38, self.pos39], [self.pos40, self.pos41, self.pos42, self.pos43, self.pos44, self.pos45, self.pos46, self.pos47, self.pos48, self.pos49], [self.pos50, self.pos51, self.pos52, self.pos53, self.pos54, self.pos55, self.pos56, self.pos57, self.pos58, self.pos59] ,[self.pos60, self.pos61, self.pos62, self.pos63, self.pos64, self.pos65, self.pos66, self.pos67, self.pos68, self.pos69] , [self.pos70, self.pos71, self.pos72, self.pos73, self.pos74, self.pos75, self.pos76, self.pos77, self.pos78, self.pos79], [self.pos80, self.pos81, self.pos82, self.pos83, self.pos84, self.pos85, self.pos86, self.pos87, self.pos88, self.pos89], [self.pos90, self.pos91, self.pos92, self.pos93, self.pos94, self.pos95, self.pos96, self.pos97, self.pos98, self.pos99]]
 
@@ -1307,28 +1512,53 @@ class Ui_MainWindow(object):
         karel_program = self.textEdit.toPlainText()
         check_lex_and_syntax(karel_program)
         print('reading form board')
+        execute_semantic()
         return karel_program
 
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
+
+
         self.textEdit.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
             "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
             "p, li { white-space: pre-wrap; font-size: 30px; }\n"
             "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:15pt; font-weight:400; font-style:normal;\">\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">class program {</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">    program() {</span></p>\n"
-            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        if(left-is-blocked){</span></p>\n"
-            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">            move()</span></p>\n"
-            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        }</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        turnleft()</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        turnleft()</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        turnleft()</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        turnleft()</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        end()</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">    }</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">}</span></p></body></html>", None))
+        # self.textEdit.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+        #     "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+        #     "p, li { white-space: pre-wrap; font-size: 30px; }\n"
+        #     "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:15pt; font-weight:400; font-style:normal;\">\n"
+        #     "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">class program {</span></p>\n"
+        #     "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">    program() {</span></p>\n"
+        #     "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        if(left-is-blocked){</span></p>\n"
+        #     "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">            move()</span></p>\n"
+        #     "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        }</span></p>\n"
+        #     "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        end()</span></p>\n"
+        #     "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">    }</span></p>\n"
+        #     "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">}</span></p></body></html>", None))
         self.reload_board.setText(_translate("MainWindow", "Reload Board", None))
         self.execute_code.setText(_translate("MainWindow", "Execute code", None))
         self.label.setText(_translate("MainWindow", "Karel code", None))
         self.label_2.setText(_translate("MainWindow", "Board", None))
 #    def set_icons(self, buttons_list):
+
+
+
+
 
 
 if __name__ == "__main__":
@@ -1339,17 +1569,8 @@ if __name__ == "__main__":
     ui = Ui_MainWindow()
 
     ui.setupUi(MainWindow)
-
     read_board_file()
     pprint.pprint(karel_map_matrix)
 
-
-
-
-
-
-
     MainWindow.show()
     sys.exit(app.exec_())
-
-
