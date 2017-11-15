@@ -709,7 +709,6 @@ class MyPopup(QtGui.QWidget):
         dc.drawLine(100, 0, 0, 100)
 
 
-
 def check_lex_and_syntax(karel_program):
     #karel_program = open('karel.txt').read()
     lexer = OurLexer()
@@ -730,6 +729,7 @@ def check_lex_and_syntax(karel_program):
     program()
 
 def read_board_file():
+    print("QUE PEDOOOOOOOOOOOOO")
     global karel_map_matrix
     print("reading from file, reload")
     karel_map_matrix = [[0 for x in range(10)] for y in range(10)]
@@ -813,40 +813,45 @@ def draw_board():
     global all_squares
     global karel_dict
 
-    for i, array in enumerate(all_squares):
-        for j, square in enumerate(array):
-            if(karel_map_matrix[i][j] == '-'):
-                set_square(square, 'blank')
-            elif(karel_map_matrix[i][j] == 'B'):
-                set_square(square, 'wall')
-            elif(karel_map_matrix[i][j].isdigit()):
-                set_square(square, 'beeper')
-            elif(karel_map_matrix[i][j] == 'N'):
-                karel_dict["position_i"] = i
-                karel_dict["position_j"] = j
-                karel_dict["direction"] = 'north'
-                set_square(square, 'north')
-                karel_map_matrix[i][j] = '-'
-            elif(karel_map_matrix[i][j] == 'S'):
-                karel_dict["position_i"] = i
-                karel_dict["position_j"] = j
-                karel_dict["direction"] = 'south'
-                set_square(square, 'south')
-                karel_map_matrix[i][j] = '-'
-            elif(karel_map_matrix[i][j] == 'E'):
-                karel_dict["position_i"] = i
-                karel_dict["position_j"] = j
-                karel_dict["direction"] = 'east'
-                set_square(square, 'east')
-                karel_map_matrix[i][j] = '-'
-            elif(karel_map_matrix[i][j] == 'W'):
-                karel_dict["position_i"] = i
-                karel_dict["position_j"] = j
-                karel_dict["direction"] = 'west'
-                set_square(square, 'west')
-                karel_map_matrix[i][j] = '-'
-            else:
-                raise Exception('Invalid symbol in Karel File, unable to load')
+    try:
+        for i, array in enumerate(all_squares):
+            for j, square in enumerate(array):
+                if(karel_map_matrix[i][j] == '-'):
+                    set_square(square, 'blank')
+                elif(karel_map_matrix[i][j] == 'B'):
+                    set_square(square, 'wall')
+                elif(karel_map_matrix[i][j].isdigit()):
+                    set_square(square, 'beeper')
+                elif(karel_map_matrix[i][j] == 'N'):
+                    karel_dict["position_i"] = i
+                    karel_dict["position_j"] = j
+                    karel_dict["direction"] = 'north'
+                    set_square(square, 'north')
+                    karel_map_matrix[i][j] = '-'
+                elif(karel_map_matrix[i][j] == 'S'):
+                    karel_dict["position_i"] = i
+                    karel_dict["position_j"] = j
+                    karel_dict["direction"] = 'south'
+                    set_square(square, 'south')
+                    karel_map_matrix[i][j] = '-'
+                elif(karel_map_matrix[i][j] == 'E'):
+                    karel_dict["position_i"] = i
+                    karel_dict["position_j"] = j
+                    karel_dict["direction"] = 'east'
+                    set_square(square, 'east')
+                    karel_map_matrix[i][j] = '-'
+                elif(karel_map_matrix[i][j] == 'W'):
+                    karel_dict["position_i"] = i
+                    karel_dict["position_j"] = j
+                    karel_dict["direction"] = 'west'
+                    set_square(square, 'west')
+                    karel_map_matrix[i][j] = '-'
+                else:
+                    raise Exception('Invalid symbol in Karel File, unable to load')
+    except (Exception) as e:
+        print (e)
+        stop_execution(str(e))
+    time.sleep(1)
 
     #checa el dic Karel
     #pinta Karel en la posicion que sacamos del dic
@@ -858,6 +863,8 @@ def move_board():
     print('executing move')
 
     i, j = get_karel_position()
+
+    front_is_clear_board()
 
     try:
         if (karel_dict['direction'] == 'north'):
@@ -913,8 +920,7 @@ def move_board():
 
     except (Exception) as e:
         print (e)
-        #TODO, implement pop up crash window (with reload button, same as the button we already have)
-        #Ui_MainWindow.create_error_popup()
+        stop_execution(str(e))
     time.sleep(1)
 
 
@@ -924,7 +930,6 @@ def turn_left_board():
     global karel_dict
     global all_squares
     beepers = ''
-
 
     print('executing turnleft')
     i, j = get_karel_position()
@@ -964,12 +969,11 @@ def put_beeper_board():
             #Dejar un beeper no matter what
             set_square(all_squares[i][j], karel_dict['direction'] +'B')  #El + 'B' para poner la imagen ROJA
         else:
-            raise Exception('No beepers to put!')
+            raise Exception('You don´t have any beepers')
 
     except Exception as e:
         print (e)
-        #TODO, implement same pop up error message
-
+        stop_execution(str(e))
     time.sleep(1)
 
 def pick_beeper_board():
@@ -991,11 +995,10 @@ def pick_beeper_board():
                 set_square(all_squares[i][j], karel_dict['direction'])
 
         else:
-            raise Exception('No beepers to pick !')
+            raise Exception('There are no beepers in this block')
     except Exception as e:
-        #TODO, implement same pop up error message
         print (e)
-
+        stop_execution(str(e))
     time.sleep(1)
 
 def if_condition_board():
@@ -1010,9 +1013,9 @@ def JMP_board():
     global position
     print("Esta posicion", ci_list[position])
     print("La de adelante", ci_list[position + 1])
-    nombre = ci_list[position + 1]
-    position = position + 1
-    print(nombre, 'nombre')
+    position = ci_list[position + 1] - 1 #El -1 es porque el while se brinca a la sig posición
+    print("Esta nueva posicion", ci_list[position])
+    print("La nueva de adelante", ci_list[position + 1])
 
 def RET_board():
     pass
@@ -1021,11 +1024,31 @@ def while_condition_board():
     pass
 
 def CALL_board():
-    pass
+    global ci_list
+    global position
+    print("Esta posicion", ci_list[position])
+    print("La de adelante", ci_list[position + 1])
+    position = ci_list[position + 1] - 1 #El -1 es porque el while se brinca a la sig posición
+
+def out_of_bounds_board():
+    global out_of_bounds
+    i, j = get_karel_position()
+    if (not (i-1 == 0) and not (i+1 == 9) and not (j+1 == 9) and not (j-1 == 0)):
+        out_of_bounds = False
+    else:
+        out_of_bounds = True
+    return out_of_bounds
 
 def front_is_clear_board():
-
-    pass
+    global front_is_clear
+    i, j = get_karel_position()
+    out_of_bounds = out_of_bounds_board()
+    if (out_of_bounds == False and not (karel_map_matrix[i-1][j] == 'B') and not (karel_map_matrix[i+1][j] == 'B') and not (karel_map_matrix[i][j+1] == 'B') and not (karel_map_matrix[i][j-1] == 'B')):
+        front_is_clear = True
+    else:
+        front_is_clear = False
+    print ("Limites", out_of_bounds)
+    print ("Frente", front_is_clear)
 
 def left_is_clear_board():
     pass
@@ -1080,6 +1103,21 @@ def no_beepers_in_beeper_bag_board():
 
 def program_board():
     print('executing program')
+
+def error_message_box(message):
+    msgBox = QtGui.QMessageBox()
+    QtGui.QMessageBox.critical(msgBox, 'Message', message, QtGui.QMessageBox.Ok)
+
+def stop_execution(error):
+    print("ESTO NO DEBERÍA IMPRIMIR NADA AL INICIO")
+    global ci_count
+    ci_count = 0
+    global ci_list
+    ci_list = []
+    for i in range(10000):
+        ci_list.append(0)
+    error_message_box(error)
+    read_board_file()
 
 def execute_semantic():
     global semantic_functions
@@ -1508,7 +1546,8 @@ class Ui_MainWindow(object):
         font.setPointSize(12)
         self.reload_board.setFont(font)
         self.reload_board.setObjectName(_fromUtf8("reload_board"))
-        self.reload_board.clicked.connect(read_board_file) #move_board read_board_file turn_left_board
+        #self.reload_board.clicked.connect(read_board_file) #move_board read_board_file turn_left_board
+        QtCore.QObject.connect(self.reload_board, QtCore.SIGNAL(_fromUtf8("clicked()")), lambda error="Game reloaded": stop_execution(error))
         self.gridLayout_7.addWidget(self.reload_board, 2, 1, 1, 1)
         self.execute_code = QtGui.QPushButton(self.gridLayoutWidget)
         font = QtGui.QFont()
@@ -1549,11 +1588,6 @@ class Ui_MainWindow(object):
         global all_squares
         all_squares = [ [self.pos00, self.pos01, self.pos02, self.pos03, self.pos04, self.pos05, self.pos06, self.pos07, self.pos08, self.pos09], [self.pos10, self.pos11, self.pos12, self.pos13, self.pos14, self.pos15, self.pos16, self.pos17, self.pos18, self.pos19], [self.pos20, self.pos21, self.pos22, self.pos23, self.pos24, self.pos25, self.pos26, self.pos27, self.pos28, self.pos29] , [self.pos30, self.pos31, self.pos32, self.pos33, self.pos34, self.pos35, self.pos36, self.pos37, self.pos38, self.pos39], [self.pos40, self.pos41, self.pos42, self.pos43, self.pos44, self.pos45, self.pos46, self.pos47, self.pos48, self.pos49], [self.pos50, self.pos51, self.pos52, self.pos53, self.pos54, self.pos55, self.pos56, self.pos57, self.pos58, self.pos59] ,[self.pos60, self.pos61, self.pos62, self.pos63, self.pos64, self.pos65, self.pos66, self.pos67, self.pos68, self.pos69] , [self.pos70, self.pos71, self.pos72, self.pos73, self.pos74, self.pos75, self.pos76, self.pos77, self.pos78, self.pos79], [self.pos80, self.pos81, self.pos82, self.pos83, self.pos84, self.pos85, self.pos86, self.pos87, self.pos88, self.pos89], [self.pos90, self.pos91, self.pos92, self.pos93, self.pos94, self.pos95, self.pos96, self.pos97, self.pos98, self.pos99]]
 
-    def create_error_popup(self):
-        self.w = MyPopup()
-        self.w.setGeometry(QtGui.QLabel(100, 100, 400, 200))
-        self.w.setText(_translate("MainWindow", "INVALID MOVE", None))
-        self.w.show()
 
     def execute_code_from_board(self):
         # Reset our CI and its counter
@@ -1574,20 +1608,22 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow", None))
 
-
         self.textEdit.setHtml(_translate("MainWindow", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
             "<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
             "p, li { white-space: pre-wrap; font-size: 30px; }\n"
             "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:15pt; font-weight:400; font-style:normal;\">\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">class program {</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">    void funo() {</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        turnleft()</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        turnleft()</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        turnleft()</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">    }</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">    program() {</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        pickbeeper()</span></p>\n"
-            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        turnleft()</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        putbeeper()</span></p>\n"
-            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        turnleft()</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        turnleft()</span></p>\n"
@@ -1612,10 +1648,6 @@ class Ui_MainWindow(object):
         self.label.setText(_translate("MainWindow", "Karel code", None))
         self.label_2.setText(_translate("MainWindow", "Board", None))
 #    def set_icons(self, buttons_list):
-
-
-
-
 
 
 if __name__ == "__main__":
