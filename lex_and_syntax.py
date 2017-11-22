@@ -699,15 +699,6 @@ def official_function():
 def number():
     exigir_numero()
 
-class MyPopup(QtGui.QWidget):
-    def __init__(self):
-        QtGui.QLabel.__init__(self)
-
-    def paintEvent(self, e):
-        dc = QPainter(self)
-        dc.drawLine(0, 0, 100, 100)
-        dc.drawLine(100, 0, 0, 100)
-
 
 def check_lex_and_syntax(karel_program):
     #karel_program = open('karel.txt').read()
@@ -744,6 +735,8 @@ def read_board_file():
     #pprint.pprint((karel_map_matrix))
     draw_board()
 
+def get_karel_direction():
+    return karel_dict['direction']
 
 def get_karel_position():
     return karel_dict['position_i'], karel_dict['position_j']
@@ -864,7 +857,6 @@ def move_board():
 
     i, j = get_karel_position()
 
-    front_is_clear_board()
 
     try:
         if (karel_dict['direction'] == 'north'):
@@ -911,7 +903,7 @@ def move_board():
                 set_square(all_squares[i][j-1], 'west')
             set_karel_position(i, j-1)
 
-        print(karel_map_matrix[i][j], 'lo que dejo atras')
+        #print(karel_map_matrix[i][j], 'lo que dejo atras')
 
         if (karel_map_matrix[i][j] == '-'):
             set_square(all_squares[i][j], 'blank')
@@ -1002,20 +994,26 @@ def pick_beeper_board():
     time.sleep(1)
 
 def if_condition_board():
-    pass
+    print('Entering if condition')
+    global ci_list
+    global position
+    #llamar al siguiente que es la condicional (y nos saltamos esa condicional)
+    position += 1
+    semantic_functions[ci_list[position]]()
+
 
 def iterate_condition_board():
     pass
 
 def JMP_board():
-    #TODO: Revisit jump to see if it's right
+
     global ci_list
     global position
-    print("Esta posicion", ci_list[position])
-    print("La de adelante", ci_list[position + 1])
+    #print("Esta posicion", ci_list[position])
+    #print("La de adelante", ci_list[position + 1])
     position = ci_list[position + 1] - 1 #El -1 es porque el while se brinca a la sig posición
-    print("Esta nueva posicion", ci_list[position])
-    print("La nueva de adelante", ci_list[position + 1])
+    #print("Esta nueva posicion", ci_list[position])
+    #print("La nueva de adelante", ci_list[position + 1])
 
 def RET_board():
     pass
@@ -1026,29 +1024,49 @@ def while_condition_board():
 def CALL_board():
     global ci_list
     global position
-    print("Esta posicion", ci_list[position])
-    print("La de adelante", ci_list[position + 1])
+    #print("Esta posicion", ci_list[position])
+    #print("La de adelante", ci_list[position + 1])
     position = ci_list[position + 1] - 1 #El -1 es porque el while se brinca a la sig posición
 
 def out_of_bounds_board():
     global out_of_bounds
     i, j = get_karel_position()
-    if (not (i-1 == 0) and not (i+1 == 9) and not (j+1 == 9) and not (j-1 == 0)):
+    if (not (i-1 == -1) and not (i+1 == 10) and not (j+1 == 10) and not (j-1 == -1)):
         out_of_bounds = False
     else:
         out_of_bounds = True
     return out_of_bounds
 
 def front_is_clear_board():
-    global front_is_clear
+    global position
+    global ci_list
+    global karel_map_matrix
+    global karel_dict
+
+    print ('entered front is clear!')
+    print(ci_list[position], position)
+
     i, j = get_karel_position()
-    out_of_bounds = out_of_bounds_board()
-    if (out_of_bounds == False and not (karel_map_matrix[i-1][j] == 'B') and not (karel_map_matrix[i+1][j] == 'B') and not (karel_map_matrix[i][j+1] == 'B') and not (karel_map_matrix[i][j-1] == 'B')):
-        front_is_clear = True
+    direction = get_karel_direction()
+
+    if(direction == 'north'):
+        i -= 1
+    elif(direction == 'south'):
+        i += 1
+    elif(direction == 'east'):
+        j += 1
+    elif(direction == 'west'):
+        j -= 1
+
+    #out_of_bounds = out_of_bounds_board()
+    if (not karel_map_matrix[i][j] == 'B'):
+        position += 2
+        print('front IS clear and added 3 to position', position)
     else:
-        front_is_clear = False
-    print ("Limites", out_of_bounds)
-    print ("Frente", front_is_clear)
+        print('front is NOT clear')
+
+ #   print ("Limites", out_of_bounds)
+ #   print ("Frente", front_is_clear)
 
 def left_is_clear_board():
     pass
@@ -1136,7 +1154,7 @@ def execute_semantic():
 
         # if(ci_list[position] == 9001):
         #     print('executing move')
-        #     move_board()
+        #     board()
 
         # elif(ci_list[position] == 9002):
         #     print('executing turnleft')
@@ -1162,6 +1180,7 @@ def execute_semantic():
         #     print ("staaaaaack", stack_positions)
         #     #position =
         # position = position + 1
+    print ('END')
 
 
 global semantic_functions
@@ -1600,6 +1619,7 @@ class Ui_MainWindow(object):
 
         karel_program = self.textEdit.toPlainText()
         check_lex_and_syntax(karel_program)
+        print_ci()
         print('reading form board')
         execute_semantic()
         return karel_program
