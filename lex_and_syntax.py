@@ -1039,12 +1039,9 @@ def out_of_bounds_board():
 
 def front_is_clear_board():
     global position
-    global ci_list
     global karel_map_matrix
-    global karel_dict
 
     print ('entered front is clear!')
-    print(ci_list[position], position)
 
     i, j = get_karel_position()
     direction = get_karel_direction()
@@ -1069,19 +1066,131 @@ def front_is_clear_board():
  #   print ("Frente", front_is_clear)
 
 def left_is_clear_board():
-    pass
+    global position
+    global karel_map_matrix
+
+    print ('entered left is clear!')
+
+    i, j = get_karel_position()
+    direction = get_karel_direction()
+
+    if(direction == 'north'):
+        j -= 1
+    elif(direction == 'south'):
+        j += 1
+    elif(direction == 'east'):
+        i -= 1
+    elif(direction == 'west'):
+        i += 1
+
+    #out_of_bounds = out_of_bounds_board()
+    if (not karel_map_matrix[i][j] == 'B'):
+        position += 2
+        print('left IS clear and added 3 to position', position)
+    else:
+        print('left is NOT clear')
+
 
 def right_is_clear_board():
-    pass
+    global position
+    global karel_map_matrix
+
+    print ('entered right is clear!')
+
+    i, j = get_karel_position()
+    direction = get_karel_direction()
+
+    if(direction == 'north'):
+        j += 1
+    elif(direction == 'south'):
+        j -= 1
+    elif(direction == 'east'):
+        i += 1
+    elif(direction == 'west'):
+        i -= 1
+
+    #out_of_bounds = out_of_bounds_board()
+    if (not karel_map_matrix[i][j] == 'B'):
+        position += 2
+        print('right IS clear and added 3 to position', position)
+    else:
+        print('right is NOT clear')
+
 
 def front_is_blocked_board():
-    pass
+    global position
+    global karel_map_matrix
+
+    print ('entered front is blocked!')
+
+    i, j = get_karel_position()
+    direction = get_karel_direction()
+
+    if(direction == 'north'):
+        i -= 1
+    elif(direction == 'south'):
+        i += 1
+    elif(direction == 'east'):
+        j += 1
+    elif(direction == 'west'):
+        j -= 1
+
+    #out_of_bounds = out_of_bounds_board()
+    if (karel_map_matrix[i][j] == 'B'):
+        position += 2
+        print('front IS blocked and added 3 to position', position)
+    else:
+        print('front is NOT blocked')
 
 def left_is_blocked_board():
-    pass
+    global position
+    global karel_map_matrix
+
+    print ('entered left is blocked!')
+
+    i, j = get_karel_position()
+    direction = get_karel_direction()
+
+    if(direction == 'north'):
+        j -= 1
+    elif(direction == 'south'):
+        j += 1
+    elif(direction == 'east'):
+        i -= 1
+    elif(direction == 'west'):
+        i += 1
+
+    #out_of_bounds = out_of_bounds_board()
+    if (karel_map_matrix[i][j] == 'B'):
+        position += 2
+        print('left IS blocked and added 3 to position', position)
+    else:
+        print('left is NOT blocked')
 
 def right_is_blocked_board():
-    pass
+    global position
+    global karel_map_matrix
+
+    print ('entered right is blocked!')
+
+    i, j = get_karel_position()
+    direction = get_karel_direction()
+
+    if(direction == 'north'):
+        j += 1
+    elif(direction == 'south'):
+        j -= 1
+    elif(direction == 'east'):
+        i += 1
+    elif(direction == 'west'):
+        i -= 1
+
+    #out_of_bounds = out_of_bounds_board()
+    if (karel_map_matrix[i][j] == 'B'):
+        position += 2
+        print('right IS blocked and added 3 to position', position)
+    else:
+        print('right is NOT blocked')
 
 def next_to_a_beeper_board():
     pass
