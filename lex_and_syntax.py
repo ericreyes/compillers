@@ -192,7 +192,7 @@ t_symbols = {}
 # all_tokens2 = all_tokens
 global karel_map_matrix
 global karel_dict
-karel_dict = {'beepers':0,'position_i':0,'position_j':0,'direction':''}
+karel_dict = {'beepers':'0', 'position_i':0,'position_j':0,'direction':''}
 
 
 def verificar(expected_token):
@@ -993,6 +993,7 @@ def pick_beeper_board():
         stop_execution(str(e))
     time.sleep(1)
 
+#TODO, fix if with else. It's working without ELSE
 def if_condition_board():
     print('Entering if condition')
     global ci_list
@@ -1193,10 +1194,30 @@ def right_is_blocked_board():
         print('right is NOT blocked')
 
 def next_to_a_beeper_board():
-    pass
+    global position
+    global karel_map_matrix
+    print ('entered next to a beeper')
+
+    i, j = get_karel_position()
+
+    if(karel_map_matrix[i][j].isdigit()):
+        print('There is a beeper under Karel')
+        position += 2
+    else:
+        print ('no beeper under karel')
 
 def not_next_to_a_beeper_board():
-    pass
+    global position
+    global karel_map_matrix
+    print ('entered NOT next to a beeper')
+
+    i, j = get_karel_position()
+
+    if(not karel_map_matrix[i][j].isdigit()):
+        print('There is no beeper under Karel')
+        position += 2
+    else:
+        print ('there is a beeper under karel')
 
 def facing_north_board():
     pass
@@ -1223,10 +1244,22 @@ def not_facing_west_board():
     pass
 
 def any_beepers_in_beeper_bag_board():
-    pass
+    global position
+    print('Entered karel has ANY beepers?')
+    if(int(karel_dict['beepers']) > 0):
+        position += 2
+        print('yes he does have beepers')
+    else:
+        print('karel doesnt have beepers')
 
 def no_beepers_in_beeper_bag_board():
-    pass
+    global position
+    print('Entered karel has NO beepers?')
+    if(karel_dict['beepers'] == '0'):
+        position += 2
+        print('karel has NO beepers')
+    else:
+        print('karel HAS beepers')
 
 def program_board():
     print('executing program')
