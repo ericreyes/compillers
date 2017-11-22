@@ -720,7 +720,7 @@ def check_lex_and_syntax(karel_program):
     program()
 
 def read_board_file():
-    print("QUE PEDOOOOOOOOOOOOO")
+    #print("QUE PEDOOOOOOOOOOOOO")
     global karel_map_matrix
     print("reading from file, reload")
     karel_map_matrix = [[0 for x in range(10)] for y in range(10)]
@@ -1220,28 +1220,44 @@ def not_next_to_a_beeper_board():
         print ('there is a beeper under karel')
 
 def facing_north_board():
-    pass
+    direction = get_karel_direction()
+    if(direction == 'north'):
+        position += 2
+
 
 def facing_south_board():
-    pass
+    direction = get_karel_direction()
+    if(direction == 'south'):
+        position += 2
 
 def facing_east_board():
-    pass
+    direction = get_karel_direction()
+    if(direction == 'east'):
+        position += 2
 
 def facing_west_board():
-    pass
+    direction = get_karel_direction()
+    if(direction == 'west'):
+        position += 2
 
 def not_facing_north_board():
-    pass
+    direction = get_karel_direction()
+    if(not direction == 'north'):
+        position += 2
 
 def not_facing_south_board():
-    pass
-
+    direction = get_karel_direction()
+    if(not direction == 'south'):
+        position += 2
 def not_facing_east_board():
-    pass
+    direction = get_karel_direction()
+    if(not direction == 'east'):
+        position += 2
 
 def not_facing_west_board():
-    pass
+    direction = get_karel_direction()
+    if(not direction == 'west'):
+        position += 2
 
 def any_beepers_in_beeper_bag_board():
     global position
