@@ -596,7 +596,6 @@ def iterate_expression():
     else:
         mostrarError("iterate")
 
-
 #------PENDIENTE_CI------
 #<condition> ::=
     # "front-is-clear" |
@@ -727,6 +726,9 @@ def check_lex_and_syntax(karel_program):
     #print (all_tokens)
     #print (token_types)
     program()
+
+global stack_customer_functions
+stack_customer_functions = []
 
 def read_board_file():
     print("QUE PEDOOOOOOOOOOOOO")
@@ -1002,6 +1004,7 @@ def pick_beeper_board():
     time.sleep(1)
 
 def if_condition_board():
+    #if(condition == True):
     pass
 
 def iterate_condition_board():
@@ -1011,14 +1014,21 @@ def JMP_board():
     #TODO: Revisit jump to see if it's right
     global ci_list
     global position
+    print("JMP START")
     print("Esta posicion", ci_list[position])
     print("La de adelante", ci_list[position + 1])
     position = ci_list[position + 1] - 1 #El -1 es porque el while se brinca a la sig posición
     print("Esta nueva posicion", ci_list[position])
-    print("La nueva de adelante", ci_list[position + 1])
+    print("La posición a ejecutar", ci_list[position + 1])
+    print("JMP END")
 
 def RET_board():
-    pass
+    global stack_customer_functions
+    global position
+    print("La posición antes del RET", position)
+    position = stack_customer_functions.pop() + 1
+    print("La posicion después del RET", position)
+    print("RET END")
 
 def while_condition_board():
     pass
@@ -1026,9 +1036,14 @@ def while_condition_board():
 def CALL_board():
     global ci_list
     global position
+    global stack_customer_functions
+    print("Lo que entra al stack", position)
+    stack_customer_functions.append(position)
+    print("El stack", stack_customer_functions)
     print("Esta posicion", ci_list[position])
     print("La de adelante", ci_list[position + 1])
     position = ci_list[position + 1] - 1 #El -1 es porque el while se brinca a la sig posición
+    print("CALL END")
 
 def out_of_bounds_board():
     global out_of_bounds
