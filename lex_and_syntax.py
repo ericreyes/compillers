@@ -1012,7 +1012,7 @@ def if_condition_board():
     position += 1
     semantic_functions[ci_list[position]]()
 
-global numIterations = 0
+global numIterations
     
 def iterate_condition_board():
     # CI POSITION = ITERATE
