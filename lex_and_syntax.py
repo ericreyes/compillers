@@ -970,8 +970,8 @@ def put_beeper_board():
             #Dejar un beeper no matter what
             set_square(all_squares[i][j], karel_dict['direction'] +'B')  #El + 'B' para poner la imagen ROJA
         else:
-            raise Exception('You don´t have any beepers')
-        print ("Beepers después del put", karel_dict['beepers'])
+            raise Exception('You don\'t have any beepers')
+        print ("Beepers despues del put", karel_dict['beepers'])
     except Exception as e:
         print (e)
         stop_execution(str(e))
@@ -997,7 +997,7 @@ def pick_beeper_board():
                 set_square(all_squares[i][j], karel_dict['direction'])
         else:
             raise Exception('There are no beepers in this block')
-        print ("Beepers después del pick", karel_dict['beepers'])
+        print ("Beepers despues del pick", karel_dict['beepers'])
     except Exception as e:
         print (e)
         stop_execution(str(e))
@@ -1022,7 +1022,7 @@ def JMP_board():
 
     #print("Esta posicion", ci_list[position])
     #print("La de adelante", ci_list[position + 1])
-    position = ci_list[position + 1] - 1 #El -1 es porque el while se brinca a la sig posición
+    position = ci_list[position + 1] - 1 #El -1 es porque el while se brinca a la sig posicion
     #print("Esta nueva posicion", ci_list[position])
     #print("La nueva de adelante", ci_list[position + 1])
     print("JMP END")
@@ -1030,9 +1030,9 @@ def JMP_board():
 def RET_board():
     global stack_customer_functions
     global position
-    print("La posición antes del RET", position)
+    print("La posicion antes del RET", position)
     position = stack_customer_functions.pop() + 1
-    print("La posicion después del RET", position)
+    print("La posicion despues del RET", position)
     print("RET END")
 
 def while_condition_board():
@@ -1047,7 +1047,7 @@ def CALL_board():
     #print("El stack", stack_customer_functions)
     #print("Esta posicion", ci_list[position])
     #print("La de adelante", ci_list[position + 1])
-    position = ci_list[position + 1] - 1 #El -1 es porque el while se brinca a la sig posición
+    position = ci_list[position + 1] - 1 #El -1 es porque el while se brinca a la sig posicion
     print("CALL END")
 
 def out_of_bounds_board():
@@ -1306,7 +1306,7 @@ def error_message_box(message):
     QtGui.QMessageBox.critical(msgBox, 'Message', message, QtGui.QMessageBox.Ok)
 
 def stop_execution(error):
-    print("ESTO NO DEBERÍA IMPRIMIR NADA AL INICIO")
+    print("ESTO NO DEBERIA IMPRIMIR NADA AL INICIO")
     global ci_count
     ci_count = 0
     global ci_list
