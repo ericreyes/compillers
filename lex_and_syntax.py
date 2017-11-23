@@ -1012,8 +1012,40 @@ def if_condition_board():
     position += 1
     semantic_functions[ci_list[position]]()
 
+global numIterations = 0
+    
 def iterate_condition_board():
-    pass
+    # CI POSITION = ITERATE
+    print('Entering iterate...')
+    global ci_list
+    global position
+    global numIterations
+
+    LAST_ITERATION_WITH_NO_EXECUTION = 1
+    READY_FOR_NEW_ITERATION = 0
+
+    position += 1
+    # CI POSITION = NUMITERATIONS
+
+    if (numIterations == READY_FOR_NEW_ITERATION):
+        numIterations = ci_list[position] + 1 # Offset
+        semantic_functions[ci_list[position + 2]]() # make a jump to the BODY for execution
+            # CI POSITION = BODY
+    elif (numIterations == LAST_ITERATION_WITH_NO_EXECUTION):
+        numIterations = 0
+        semantic_functions[ci_list[position + 1]]() # make a jump to the JMP to exit ITERATE
+            # CI POSITION = JMP
+    else:
+        semantic_functions[ci_list[position + 2]]() # make a jump to the BODY for execution
+            # CI POSITION = BODY
+
+def while_condition_board():
+    print('Entering while...')
+    global ci_list
+    global position
+    #llamar al siguiente que es la condicional (y nos saltamos esa condicional)
+    position += 1
+    semantic_functions[ci_list[position]]()
 
 def JMP_board():
 
@@ -1034,9 +1066,6 @@ def RET_board():
     position = stack_customer_functions.pop() + 1
     print("La posicion después del RET", position)
     print("RET END")
-
-def while_condition_board():
-    pass
 
 def CALL_board():
     global ci_list
