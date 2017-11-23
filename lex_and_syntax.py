@@ -122,6 +122,9 @@ class OurLexer(object):
     global stack_positions
     stack_positions = []
 
+    global stack_positions_else
+    stack_positions_else = []
+
     global ci_list
     ci_list = []
     for i in range(10000):
@@ -299,10 +302,12 @@ def mostrarError(expected_token):
 #------PENDIENTE_CI------
 #<program> ::= "class" "program" "{" <functions> <main function> "}"
 def program():
+    global ci_count
     if (exigir("class")):
         add_code_in_ci("JMP")
+        print ("STACK ANTES", stack_positions)
         stack_positions.append(ci_count)
-        print (stack_positions, "la tabla de posiciones")
+        print ("STACK DESPUES",stack_positions)
         if (exigir("program")):
             if (exigir("{")):
                 add_one_to_ci()
@@ -340,7 +345,9 @@ def main_function():
         if (exigir("(")):
             if (exigir(")")):
                 if (exigir("{")):
+                    print ("STACK ANTES", stack_positions)
                     actual_position = stack_positions.pop()
+                    print ("STACK DESPUES", stack_positions)
                     print(actual_position, 'poooooooop')
                     ci_list[actual_position] = ci_count
                     body()
@@ -476,8 +483,10 @@ def if_expression():
         if (exigir("(")):
             condition()
             add_code_in_ci("JMP")
+            print("STACK ANTES", stack_positions)
             stack_positions.append(ci_count)
-            stack_positions.append(ci_count)
+            stack_positions_else.append(ci_count)
+            print("STACK DESPUES", stack_positions)
             add_one_to_ci()
             if (exigir(")")):
                 if (exigir("{")):
@@ -487,7 +496,9 @@ def if_expression():
                         else_expression()
                     else:
                         mostrarError("}")
+                    print("STACK ANTES", stack_positions)
                     actual_position = stack_positions.pop()
+                    print("STACK ANTES", stack_positions)
                     ci_list[actual_position] = ci_count
                 else:
                     mostrarError("{")
@@ -505,17 +516,21 @@ def else_expression():
     if (verificar("else")):
         if (exigir("else")):
             add_code_in_ci("JMP")
-            actual_position = stack_positions.pop()
+            actual_position = stack_positions_else.pop()
             print(actual_position, 'poooooooop')
             ci_list[actual_position] = ci_count + 1
 
+            print ("STACK ANTES", stack_positions)
             stack_positions.append(ci_count)
+            print ("STACK DESPUES", stack_positions)
             add_one_to_ci()
             if (exigir("{")):
                 body()
                 if (not exigir("}")):
                     mostrarError("}")
+                print ("STACK ANTES", stack_positions)
                 actual_position = stack_positions.pop()
+                print ("STACK DESPUES", stack_positions)
                 print(actual_position, 'poooooooop')
                 ci_list[actual_position] = ci_count
                 print_ci()
@@ -1025,7 +1040,7 @@ def JMP_board():
     position = ci_list[position + 1] - 1 #El -1 es porque el while se brinca a la sig posición
     #print("Esta nueva posicion", ci_list[position])
     #print("La nueva de adelante", ci_list[position + 1])
-    print("JMP END")
+    #print("JMP END")
 
 def RET_board():
     global stack_customer_functions
@@ -1813,19 +1828,12 @@ class Ui_MainWindow(object):
             "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:15pt; font-weight:400; font-style:normal;\">\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">class program {</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">    void funo() {</span></p>\n"
-            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        turnleft()</span></p>\n"
-            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        turnleft()</span></p>\n"
-            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        turnleft()</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        if(front-is-clear){</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">         turnleft()</span></p>\n"
+            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        }</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">    }</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">    program() {</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
-            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
-            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        pickbeeper()</span></p>\n"
-            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
-            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        putbeeper()</span></p>\n"
-            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        move()</span></p>\n"
-            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        turnleft()</span></p>\n"
-            "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        turnleft()</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        turnleft()</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">        end()</span></p>\n"
             "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt;\">    }</span></p>\n"
