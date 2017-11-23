@@ -1027,8 +1027,53 @@ def if_condition_board():
     position += 1
     semantic_functions[ci_list[position]]()
 
+global numIterations
+numIterations = 0
+    
 def iterate_condition_board():
-    pass
+    # CI POSITION = ITERATE
+    print('Entering iterate...')
+    global ci_list
+    global position
+    global numIterations
+
+    LAST_ITERATION_WITH_NO_EXECUTION = 1
+    READY_FOR_NEW_ITERATION = 0
+
+
+    print('iteracion numero: ' + str(numIterations))
+    if (numIterations == READY_FOR_NEW_ITERATION):
+        print('Ready for new iteration...')
+        position += 1
+        # CI POSITION = NUMITERATIONS
+        numIterations = ci_list[position] + 1 # Offset
+        print('numIterations: ' + str(numIterations))
+        print('pos: ' + str(position+3) + '|||' + str(ci_list[position + 3]))
+        position += 3
+        numIterations -= 1
+        semantic_functions[ci_list[position]]() # make a jump to the BODY for execution
+            # CI POSITION = BODY
+    elif (numIterations == LAST_ITERATION_WITH_NO_EXECUTION):
+        print('Last iteration with no execution...')
+        position += 2
+        # CI POSITION = NUMITERATIONS
+        numIterations = 0
+        semantic_functions[ci_list[position]]() # make a jump to the JMP to exit ITERATE
+            # CI POSITION = JMP
+    else:
+        print('Normal iteration - Going to BODY...')
+        position += 4
+        numIterations -= 1
+        semantic_functions[ci_list[position]]() # make a jump to the BODY for execution
+            # CI POSITION = BODY
+
+def while_condition_board():
+    print('Entering while...')
+    global ci_list
+    global position
+    #llamar al siguiente que es la condicional (y nos saltamos esa condicional)
+    position += 1
+    semantic_functions[ci_list[position]]()
 
 def JMP_board():
 
@@ -1049,9 +1094,6 @@ def RET_board():
     position = stack_customer_functions.pop() + 1
     print("La posicion despues del RET", position)
     print("RET END")
-
-def while_condition_board():
-    pass
 
 def CALL_board():
     global ci_list
@@ -1342,6 +1384,8 @@ def execute_semantic():
         QtGui.QApplication.processEvents() ##TODO WHAT THE FUCK
 
         #Paso fancy para ejecutar todas las funciones acorde al codigo intermedio
+        print('trying to get ' + str(ci_list[position]) + 'from the semantic_functions')
+        print('position: ' + str(position))
         semantic_functions[ci_list[position]]()
         position = position + 1
 
