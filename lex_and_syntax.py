@@ -192,7 +192,7 @@ t_symbols = {}
 # all_tokens2 = all_tokens
 global karel_map_matrix
 global karel_dict
-karel_dict = {'beepers':0,'position_i':0,'position_j':0,'direction':''}
+karel_dict = {'beepers':'0', 'position_i':0,'position_j':0,'direction':''}
 
 
 def verificar(expected_token):
@@ -698,15 +698,6 @@ def official_function():
 def number():
     exigir_numero()
 
-class MyPopup(QtGui.QWidget):
-    def __init__(self):
-        QtGui.QLabel.__init__(self)
-
-    def paintEvent(self, e):
-        dc = QPainter(self)
-        dc.drawLine(0, 0, 100, 100)
-        dc.drawLine(100, 0, 0, 100)
-
 
 def check_lex_and_syntax(karel_program):
     #karel_program = open('karel.txt').read()
@@ -731,7 +722,7 @@ global stack_customer_functions
 stack_customer_functions = []
 
 def read_board_file():
-    print("QUE PEDOOOOOOOOOOOOO")
+    #print("QUE PEDOOOOOOOOOOOOO")
     global karel_map_matrix
     print("reading from file, reload")
     karel_map_matrix = [[0 for x in range(10)] for y in range(10)]
@@ -746,6 +737,8 @@ def read_board_file():
     #pprint.pprint((karel_map_matrix))
     draw_board()
 
+def get_karel_direction():
+    return karel_dict['direction']
 
 def get_karel_position():
     return karel_dict['position_i'], karel_dict['position_j']
@@ -866,7 +859,6 @@ def move_board():
 
     i, j = get_karel_position()
 
-    front_is_clear_board()
 
     try:
         if (karel_dict['direction'] == 'north'):
@@ -913,7 +905,7 @@ def move_board():
                 set_square(all_squares[i][j-1], 'west')
             set_karel_position(i, j-1)
 
-        print(karel_map_matrix[i][j], 'lo que dejo atras')
+        #print(karel_map_matrix[i][j], 'lo que dejo atras')
 
         if (karel_map_matrix[i][j] == '-'):
             set_square(all_squares[i][j], 'blank')
@@ -1003,23 +995,28 @@ def pick_beeper_board():
         stop_execution(str(e))
     time.sleep(1)
 
+#TODO, fix if with else. It's working without ELSE
 def if_condition_board():
-    #if(condition == True):
-    pass
+    print('Entering if condition')
+    global ci_list
+    global position
+    #llamar al siguiente que es la condicional (y nos saltamos esa condicional)
+    position += 1
+    semantic_functions[ci_list[position]]()
 
 def iterate_condition_board():
     pass
 
 def JMP_board():
-    #TODO: Revisit jump to see if it's right
+
     global ci_list
     global position
-    print("JMP START")
-    print("Esta posicion", ci_list[position])
-    print("La de adelante", ci_list[position + 1])
+
+    #print("Esta posicion", ci_list[position])
+    #print("La de adelante", ci_list[position + 1])
     position = ci_list[position + 1] - 1 #El -1 es porque el while se brinca a la sig posición
-    print("Esta nueva posicion", ci_list[position])
-    print("La posición a ejecutar", ci_list[position + 1])
+    #print("Esta nueva posicion", ci_list[position])
+    #print("La nueva de adelante", ci_list[position + 1])
     print("JMP END")
 
 def RET_board():
@@ -1037,84 +1034,261 @@ def CALL_board():
     global ci_list
     global position
     global stack_customer_functions
-    print("Lo que entra al stack", position)
+    #print("Lo que entra al stack", position)
     stack_customer_functions.append(position)
-    print("El stack", stack_customer_functions)
-    print("Esta posicion", ci_list[position])
-    print("La de adelante", ci_list[position + 1])
+    #print("El stack", stack_customer_functions)
+    #print("Esta posicion", ci_list[position])
+    #print("La de adelante", ci_list[position + 1])
     position = ci_list[position + 1] - 1 #El -1 es porque el while se brinca a la sig posición
     print("CALL END")
 
 def out_of_bounds_board():
     global out_of_bounds
     i, j = get_karel_position()
-    if (not (i-1 == 0) and not (i+1 == 9) and not (j+1 == 9) and not (j-1 == 0)):
+    if (not (i-1 == -1) and not (i+1 == 10) and not (j+1 == 10) and not (j-1 == -1)):
         out_of_bounds = False
     else:
         out_of_bounds = True
     return out_of_bounds
 
 def front_is_clear_board():
-    global front_is_clear
+    global position
+    global karel_map_matrix
+
+    print ('entered front is clear!')
+
     i, j = get_karel_position()
-    out_of_bounds = out_of_bounds_board()
-    if (out_of_bounds == False and not (karel_map_matrix[i-1][j] == 'B') and not (karel_map_matrix[i+1][j] == 'B') and not (karel_map_matrix[i][j+1] == 'B') and not (karel_map_matrix[i][j-1] == 'B')):
-        front_is_clear = True
+    direction = get_karel_direction()
+
+    if(direction == 'north'):
+        i -= 1
+    elif(direction == 'south'):
+        i += 1
+    elif(direction == 'east'):
+        j += 1
+    elif(direction == 'west'):
+        j -= 1
+
+    #out_of_bounds = out_of_bounds_board()
+    if (not karel_map_matrix[i][j] == 'B'):
+        position += 2
+        print('front IS clear and added 3 to position', position)
     else:
-        front_is_clear = False
-    print ("Limites", out_of_bounds)
-    print ("Frente", front_is_clear)
+        print('front is NOT clear')
+
+ #   print ("Limites", out_of_bounds)
+ #   print ("Frente", front_is_clear)
 
 def left_is_clear_board():
-    pass
+    global position
+    global karel_map_matrix
+
+    print ('entered left is clear!')
+
+    i, j = get_karel_position()
+    direction = get_karel_direction()
+
+    if(direction == 'north'):
+        j -= 1
+    elif(direction == 'south'):
+        j += 1
+    elif(direction == 'east'):
+        i -= 1
+    elif(direction == 'west'):
+        i += 1
+
+    #out_of_bounds = out_of_bounds_board()
+    if (not karel_map_matrix[i][j] == 'B'):
+        position += 2
+        print('left IS clear and added 3 to position', position)
+    else:
+        print('left is NOT clear')
+
 
 def right_is_clear_board():
-    pass
+    global position
+    global karel_map_matrix
+
+    print ('entered right is clear!')
+
+    i, j = get_karel_position()
+    direction = get_karel_direction()
+
+    if(direction == 'north'):
+        j += 1
+    elif(direction == 'south'):
+        j -= 1
+    elif(direction == 'east'):
+        i += 1
+    elif(direction == 'west'):
+        i -= 1
+
+    #out_of_bounds = out_of_bounds_board()
+    if (not karel_map_matrix[i][j] == 'B'):
+        position += 2
+        print('right IS clear and added 3 to position', position)
+    else:
+        print('right is NOT clear')
+
 
 def front_is_blocked_board():
-    pass
+    global position
+    global karel_map_matrix
+
+    print ('entered front is blocked!')
+
+    i, j = get_karel_position()
+    direction = get_karel_direction()
+
+    if(direction == 'north'):
+        i -= 1
+    elif(direction == 'south'):
+        i += 1
+    elif(direction == 'east'):
+        j += 1
+    elif(direction == 'west'):
+        j -= 1
+
+    #out_of_bounds = out_of_bounds_board()
+    if (karel_map_matrix[i][j] == 'B'):
+        position += 2
+        print('front IS blocked and added 3 to position', position)
+    else:
+        print('front is NOT blocked')
 
 def left_is_blocked_board():
-    pass
+    global position
+    global karel_map_matrix
+
+    print ('entered left is blocked!')
+
+    i, j = get_karel_position()
+    direction = get_karel_direction()
+
+    if(direction == 'north'):
+        j -= 1
+    elif(direction == 'south'):
+        j += 1
+    elif(direction == 'east'):
+        i -= 1
+    elif(direction == 'west'):
+        i += 1
+
+    #out_of_bounds = out_of_bounds_board()
+    if (karel_map_matrix[i][j] == 'B'):
+        position += 2
+        print('left IS blocked and added 3 to position', position)
+    else:
+        print('left is NOT blocked')
 
 def right_is_blocked_board():
-    pass
+    global position
+    global karel_map_matrix
+
+    print ('entered right is blocked!')
+
+    i, j = get_karel_position()
+    direction = get_karel_direction()
+
+    if(direction == 'north'):
+        j += 1
+    elif(direction == 'south'):
+        j -= 1
+    elif(direction == 'east'):
+        i += 1
+    elif(direction == 'west'):
+        i -= 1
+
+    #out_of_bounds = out_of_bounds_board()
+    if (karel_map_matrix[i][j] == 'B'):
+        position += 2
+        print('right IS blocked and added 3 to position', position)
+    else:
+        print('right is NOT blocked')
 
 def next_to_a_beeper_board():
-    pass
+    global position
+    global karel_map_matrix
+    print ('entered next to a beeper')
+
+    i, j = get_karel_position()
+
+    if(karel_map_matrix[i][j].isdigit()):
+        print('There is a beeper under Karel')
+        position += 2
+    else:
+        print ('no beeper under karel')
 
 def not_next_to_a_beeper_board():
-    pass
+    global position
+    global karel_map_matrix
+    print ('entered NOT next to a beeper')
+
+    i, j = get_karel_position()
+
+    if(not karel_map_matrix[i][j].isdigit()):
+        print('There is no beeper under Karel')
+        position += 2
+    else:
+        print ('there is a beeper under karel')
 
 def facing_north_board():
-    pass
+    direction = get_karel_direction()
+    if(direction == 'north'):
+        position += 2
+
 
 def facing_south_board():
-    pass
+    direction = get_karel_direction()
+    if(direction == 'south'):
+        position += 2
 
 def facing_east_board():
-    pass
+    direction = get_karel_direction()
+    if(direction == 'east'):
+        position += 2
 
 def facing_west_board():
-    pass
+    direction = get_karel_direction()
+    if(direction == 'west'):
+        position += 2
 
 def not_facing_north_board():
-    pass
+    direction = get_karel_direction()
+    if(not direction == 'north'):
+        position += 2
 
 def not_facing_south_board():
-    pass
-
+    direction = get_karel_direction()
+    if(not direction == 'south'):
+        position += 2
 def not_facing_east_board():
-    pass
+    direction = get_karel_direction()
+    if(not direction == 'east'):
+        position += 2
 
 def not_facing_west_board():
-    pass
+    direction = get_karel_direction()
+    if(not direction == 'west'):
+        position += 2
 
 def any_beepers_in_beeper_bag_board():
-    pass
+    global position
+    print('Entered karel has ANY beepers?')
+    if(int(karel_dict['beepers']) > 0):
+        position += 2
+        print('yes he does have beepers')
+    else:
+        print('karel doesnt have beepers')
 
 def no_beepers_in_beeper_bag_board():
-    pass
+    global position
+    print('Entered karel has NO beepers?')
+    if(karel_dict['beepers'] == '0'):
+        position += 2
+        print('karel has NO beepers')
+    else:
+        print('karel HAS beepers')
 
 def program_board():
     print('executing program')
@@ -1151,7 +1325,7 @@ def execute_semantic():
 
         # if(ci_list[position] == 9001):
         #     print('executing move')
-        #     move_board()
+        #     board()
 
         # elif(ci_list[position] == 9002):
         #     print('executing turnleft')
@@ -1177,6 +1351,7 @@ def execute_semantic():
         #     print ("staaaaaack", stack_positions)
         #     #position =
         # position = position + 1
+    print ('END')
 
 
 global semantic_functions
@@ -1615,6 +1790,7 @@ class Ui_MainWindow(object):
 
         karel_program = self.textEdit.toPlainText()
         check_lex_and_syntax(karel_program)
+        print_ci()
         print('reading form board')
         execute_semantic()
         return karel_program
