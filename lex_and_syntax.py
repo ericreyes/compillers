@@ -1025,22 +1025,31 @@ def iterate_condition_board():
     LAST_ITERATION_WITH_NO_EXECUTION = 1
     READY_FOR_NEW_ITERATION = 0
 
-    position += 1
-    # CI POSITION = NUMITERATIONS
 
     print('iteracion numero: ' + str(numIterations))
     if (numIterations == READY_FOR_NEW_ITERATION):
+        print('Ready for new iteration...')
+        position += 1
+        # CI POSITION = NUMITERATIONS
         numIterations = ci_list[position] + 1 # Offset
         print('numIterations: ' + str(numIterations))
         print('pos: ' + str(position+3) + '|||' + str(ci_list[position + 3]))
-        semantic_functions[ci_list[position + 3]]() # make a jump to the BODY for execution
+        position += 3
+        numIterations -= 1
+        semantic_functions[ci_list[position]]() # make a jump to the BODY for execution
             # CI POSITION = BODY
     elif (numIterations == LAST_ITERATION_WITH_NO_EXECUTION):
+        print('Last iteration with no execution...')
+        position += 2
+        # CI POSITION = NUMITERATIONS
         numIterations = 0
-        semantic_functions[ci_list[position + 2]]() # make a jump to the JMP to exit ITERATE
+        semantic_functions[ci_list[position]]() # make a jump to the JMP to exit ITERATE
             # CI POSITION = JMP
     else:
-        semantic_functions[ci_list[position + 3]]() # make a jump to the BODY for execution
+        print('Normal iteration - Going to BODY...')
+        position += 4
+        numIterations -= 1
+        semantic_functions[ci_list[position]]() # make a jump to the BODY for execution
             # CI POSITION = BODY
 
 def while_condition_board():
