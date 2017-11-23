@@ -1028,16 +1028,19 @@ def iterate_condition_board():
     position += 1
     # CI POSITION = NUMITERATIONS
 
+    print('iteracion numero: ' + str(numIterations))
     if (numIterations == READY_FOR_NEW_ITERATION):
         numIterations = ci_list[position] + 1 # Offset
-        semantic_functions[ci_list[position + 2]]() # make a jump to the BODY for execution
+        print('numIterations: ' + str(numIterations))
+        print('pos: ' + str(position+3) + '|||' + str(ci_list[position + 3]))
+        semantic_functions[ci_list[position + 3]]() # make a jump to the BODY for execution
             # CI POSITION = BODY
     elif (numIterations == LAST_ITERATION_WITH_NO_EXECUTION):
         numIterations = 0
-        semantic_functions[ci_list[position + 1]]() # make a jump to the JMP to exit ITERATE
+        semantic_functions[ci_list[position + 2]]() # make a jump to the JMP to exit ITERATE
             # CI POSITION = JMP
     else:
-        semantic_functions[ci_list[position + 2]]() # make a jump to the BODY for execution
+        semantic_functions[ci_list[position + 3]]() # make a jump to the BODY for execution
             # CI POSITION = BODY
 
 def while_condition_board():
@@ -1357,6 +1360,8 @@ def execute_semantic():
         QtGui.QApplication.processEvents() ##TODO WHAT THE FUCK
 
         #Paso fancy para ejecutar todas las funciones acorde al codigo intermedio
+        print('trying to get ' + str(ci_list[position]) + 'from the semantic_functions')
+        print('position: ' + str(position))
         semantic_functions[ci_list[position]]()
         position = position + 1
 
