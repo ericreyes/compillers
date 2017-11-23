@@ -952,19 +952,26 @@ def put_beeper_board():
     i, j = get_karel_position()
 
     try:
+        print ("Beepers antes del put", karel_dict['beepers'])
         if (int(karel_dict['beepers']) >= 1):
             if(karel_map_matrix[i][j].isdigit()):
                 new_beepers = int(karel_dict['beepers']) - 1
                 karel_dict['beepers'] = str(new_beepers)
                 pos_beepers = int(karel_map_matrix[i][j]) + 1
                 karel_map_matrix[i][j] = str(pos_beepers)
+
+                new_beepers = int(karel_dict['beepers']) - 1
+                karel_dict['beepers'] = str(new_beepers)
             else:
                 karel_map_matrix[i][j] = '1'
+
+                new_beepers = int(karel_dict['beepers']) - 1
+                karel_dict['beepers'] = str(new_beepers)
             #Dejar un beeper no matter what
             set_square(all_squares[i][j], karel_dict['direction'] +'B')  #El + 'B' para poner la imagen ROJA
         else:
             raise Exception('You don´t have any beepers')
-
+        print ("Beepers después del put", karel_dict['beepers'])
     except Exception as e:
         print (e)
         stop_execution(str(e))
@@ -976,6 +983,7 @@ def pick_beeper_board():
     global karel_map_matrix
 
     try:
+        print ("Beepers antes del pick", karel_dict['beepers'])
         i, j = get_karel_position()
         if(karel_map_matrix[i][j].isdigit()):
             pos_beepers = int(karel_map_matrix[i][j]) - 1
@@ -987,9 +995,9 @@ def pick_beeper_board():
             if (karel_map_matrix[i][j] == '0'):
                 karel_map_matrix[i][j] = '-'
                 set_square(all_squares[i][j], karel_dict['direction'])
-
         else:
             raise Exception('There are no beepers in this block')
+        print ("Beepers después del pick", karel_dict['beepers'])
     except Exception as e:
         print (e)
         stop_execution(str(e))
