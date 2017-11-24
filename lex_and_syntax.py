@@ -1029,7 +1029,7 @@ def if_condition_board():
 
 global numIterations
 numIterations = 0
-    
+
 def iterate_condition_board():
     # CI POSITION = ITERATE
     print('Entering iterate...')
@@ -1107,14 +1107,6 @@ def CALL_board():
     position = ci_list[position + 1] - 1 #El -1 es porque el while se brinca a la sig posicion
     print("CALL END")
 
-def out_of_bounds_board():
-    global out_of_bounds
-    i, j = get_karel_position()
-    if (not (i-1 == -1) and not (i+1 == 10) and not (j+1 == 10) and not (j-1 == -1)):
-        out_of_bounds = False
-    else:
-        out_of_bounds = True
-    return out_of_bounds
 
 def front_is_clear_board():
     global position
@@ -1135,7 +1127,7 @@ def front_is_clear_board():
         j -= 1
 
     #out_of_bounds = out_of_bounds_board()
-    if (not karel_map_matrix[i][j] == 'B'):
+    if (not karel_map_matrix[i][j] == 'B' and not is_out_of_bounds(i,j)):
         position += 2
         print('front IS clear and added 3 to position', position)
     else:
@@ -1143,6 +1135,9 @@ def front_is_clear_board():
 
  #   print ("Limites", out_of_bounds)
  #   print ("Frente", front_is_clear)
+
+def is_out_of_bounds(i,j):
+    return i >= 10 or i <= -1 or j >= 10  or j <= -1
 
 def left_is_clear_board():
     global position
@@ -1163,7 +1158,7 @@ def left_is_clear_board():
         i += 1
 
     #out_of_bounds = out_of_bounds_board()
-    if (not karel_map_matrix[i][j] == 'B'):
+    if (not karel_map_matrix[i][j] == 'B' and not is_out_of_bounds(i,j)):
         position += 2
         print('left IS clear and added 3 to position', position)
     else:
@@ -1189,7 +1184,7 @@ def right_is_clear_board():
         i -= 1
 
     #out_of_bounds = out_of_bounds_board()
-    if (not karel_map_matrix[i][j] == 'B'):
+    if (not karel_map_matrix[i][j] == 'B' and not is_out_of_bounds(i,j)):
         position += 2
         print('right IS clear and added 3 to position', position)
     else:
@@ -1215,7 +1210,7 @@ def front_is_blocked_board():
         j -= 1
 
     #out_of_bounds = out_of_bounds_board()
-    if (karel_map_matrix[i][j] == 'B'):
+    if (karel_map_matrix[i][j] == 'B' and is_out_of_bounds(i,j)):
         position += 2
         print('front IS blocked and added 3 to position', position)
     else:
@@ -1240,7 +1235,7 @@ def left_is_blocked_board():
         i += 1
 
     #out_of_bounds = out_of_bounds_board()
-    if (karel_map_matrix[i][j] == 'B'):
+    if (karel_map_matrix[i][j] == 'B' and is_out_of_bounds(i,j)):
         position += 2
         print('left IS blocked and added 3 to position', position)
     else:
@@ -1265,7 +1260,7 @@ def right_is_blocked_board():
         i -= 1
 
     #out_of_bounds = out_of_bounds_board()
-    if (karel_map_matrix[i][j] == 'B'):
+    if (karel_map_matrix[i][j] == 'B' and is_out_of_bounds(i,j)):
         position += 2
         print('right IS blocked and added 3 to position', position)
     else:
