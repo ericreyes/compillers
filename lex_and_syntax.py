@@ -1419,6 +1419,10 @@ def execute_semantic():
         #     print ("staaaaaack", stack_positions)
         #     #position =
         # position = position + 1
+
+    msgBox = QtGui.QMessageBox()
+    QtGui.QMessageBox.information(msgBox, 'Message', 'Ended execution :)', QtGui.QMessageBox.Ok)
+
     print ('END')
 
 
