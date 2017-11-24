@@ -296,7 +296,11 @@ def add_symbol_to_table(symbol):
 
 
 def mostrarError(expected_token):
-    raise Exception('Syntax Error: Expected {}.'.format(expected_token))
+    box = QtGui.QMessageBox()
+    error_message = 'Syntax Error: Expected {}.'.format(expected_token)
+    QtGui.QMessageBox.critical(box, 'Message',error_message , QtGui.QMessageBox.Ok)
+
+    raise Exception(error_message)
 
 
 #------PENDIENTE_CI------
