@@ -1303,27 +1303,32 @@ def not_next_to_a_beeper_board():
         print ('there is a beeper under karel')
 
 def facing_north_board():
+    global position
     direction = get_karel_direction()
     if(direction == 'north'):
         position += 2
 
 
 def facing_south_board():
+    global position
     direction = get_karel_direction()
     if(direction == 'south'):
         position += 2
 
 def facing_east_board():
+    global position
     direction = get_karel_direction()
     if(direction == 'east'):
         position += 2
 
 def facing_west_board():
+    global position
     direction = get_karel_direction()
     if(direction == 'west'):
         position += 2
 
 def not_facing_north_board():
+    global position
     direction = get_karel_direction()
     if(not direction == 'north'):
         position += 2
@@ -1333,11 +1338,13 @@ def not_facing_south_board():
     if(not direction == 'south'):
         position += 2
 def not_facing_east_board():
+    global position
     direction = get_karel_direction()
     if(not direction == 'east'):
         position += 2
 
 def not_facing_west_board():
+    global position
     direction = get_karel_direction()
     if(not direction == 'west'):
         position += 2
@@ -1386,43 +1393,19 @@ def execute_semantic():
 
     while(ci_list[position] != 9005):
 
-        QtGui.QApplication.processEvents() ##TODO WHAT THE FUCK
+        QtGui.QApplication.processEvents()
 
         #Paso fancy para ejecutar todas las funciones acorde al codigo intermedio
         print('trying to get ' + str(ci_list[position]) + 'from the semantic_functions')
         print('position: ' + str(position))
+
+        if(ci_list[position] == 0):
+            unabox = QtGui.QMessageBox()
+            QtGui.QMessageBox.information(unabox, 'Message', 'Missing end()', QtGui.QMessageBox.Ok)
+            return
         semantic_functions[ci_list[position]]()
         position = position + 1
 
-
-        # if(ci_list[position] == 9001):
-        #     print('executing move')
-        #     board()
-
-        # elif(ci_list[position] == 9002):
-        #     print('executing turnleft')
-        #     turn_left_board()
-
-        # elif(ci_list[position] == 9003):
-        #     pass
-        #     #ejecutar codigo de putbeeper
-        # elif(ci_list[position] == 9004):
-        #     pass
-        #     #ejecutar codigo de pickbeeper
-        # elif(ci_list[position] == 510 or ci_list[position] == 520 or ci_list[position] == 550):
-        #     print("condicional")
-        #     if (ci_list[position + 1] is True):
-        #         pass
-        # elif(ci_list[position] == 530 or ci_list[position] == 600):
-        #     print("Esta posicion", ci_list[position])
-        #     print("La de adelante", ci_list[position + 1])
-        #     nombre = ci_list[position + 1]
-        #     #position = position - 1
-        #     print("Que pedo")
-        # elif(ci_list[position] == 540):
-        #     print ("staaaaaack", stack_positions)
-        #     #position =
-        # position = position + 1
 
     msgBox = QtGui.QMessageBox()
     QtGui.QMessageBox.information(msgBox, 'Message', 'Ended execution :)', QtGui.QMessageBox.Ok)
