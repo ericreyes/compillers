@@ -278,7 +278,7 @@ def add_code_in_ci(word_to_find):
 
 def print_ci():
     print('#################')
-    for x in range(0, 30):
+    for x in range(0, 20):
       print(x,ci_list[x])
     print('#################')
 
@@ -499,7 +499,7 @@ def if_expression():
                     print("STACK ANTES", stack_positions)
                     actual_position = stack_positions.pop()
                     print("STACK ANTES", stack_positions)
-                    ci_list[actual_position] = ci_count
+                    #ci_list[actual_position] = ci_count
                 else:
                     mostrarError("{")
             else:
@@ -516,8 +516,11 @@ def else_expression():
     if (verificar("else")):
         if (exigir("else")):
             add_code_in_ci("JMP")
+            print ("STACK ELSE ANTES", stack_positions_else)
             actual_position = stack_positions_else.pop()
-            print(actual_position, 'poooooooop')
+            print(actual_position, 'poooooooop del ELSE')
+            print("VAL act", ci_list[actual_position])
+            print("Pos a poner", ci_count)
             ci_list[actual_position] = ci_count + 1
 
             print ("STACK ANTES", stack_positions)
@@ -528,11 +531,14 @@ def else_expression():
                 body()
                 if (not exigir("}")):
                     mostrarError("}")
-                print ("STACK ANTES", stack_positions)
+                print ("STACK ANTES ELSE", stack_positions)
                 actual_position = stack_positions.pop()
-                print ("STACK DESPUES", stack_positions)
+                print ("STACK DESPUES ELSE", stack_positions)
                 print(actual_position, 'poooooooop')
+                print("VAL act", ci_list[actual_position])
+                print("Pos a poner", ci_count)
                 ci_list[actual_position] = ci_count
+                print("THIS", ci_count)
                 print_ci()
             else:
                 mostrarError("{")
@@ -1085,7 +1091,7 @@ def JMP_board():
     position = ci_list[position + 1] - 1 #El -1 es porque el while se brinca a la sig posicion
     #print("Esta nueva posicion", ci_list[position])
     #print("La nueva de adelante", ci_list[position + 1])
-    #print("JMP END")
+    print("JMP END")
 
 def RET_board():
     global stack_customer_functions
